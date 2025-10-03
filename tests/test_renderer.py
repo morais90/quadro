@@ -68,3 +68,70 @@ def test_render_task_list() -> None:
     """)
 
     assert result.strip() == expected.strip()
+
+
+def test_render_task_detail() -> None:
+    output = StringIO()
+    console = Console(file=output)
+    renderer = Renderer(console=console)
+
+    task = Task(
+        id=42,
+        title="Fix authentication bug",
+        description="Users cannot log in with **SSO credentials**",
+        status=TaskStatus.PROGRESS,
+        milestone="v1.0",
+        created=datetime(2025, 10, 3, 10, 0, 0, tzinfo=UTC),
+        completed=None,
+    )
+
+    renderer.render_task_detail(task)
+
+    result = output.getvalue()
+
+    expected = dedent("""
+        #42
+        Status: ▶ progress
+        Milestone: v1.0
+        Created: 2025-10-03 10:00:00+00:00
+
+        Fix authentication bug
+
+        Users cannot log in with SSO credentials
+    """)
+
+    assert result.strip() == expected.strip()
+
+
+def test_render_task_detail_completed() -> None:
+    output = StringIO()
+    console = Console(file=output)
+    renderer = Renderer(console=console)
+
+    task = Task(
+        id=99,
+        title="Add user authentication",
+        description="Implement **OAuth 2.0** authentication with Google provider",
+        status=TaskStatus.DONE,
+        milestone="v1.0",
+        created=datetime(2025, 10, 1, 9, 0, 0, tzinfo=UTC),
+        completed=datetime(2025, 10, 3, 15, 30, 0, tzinfo=UTC),
+    )
+
+    renderer.render_task_detail(task)
+
+    result = output.getvalue()
+
+    expected = dedent("""
+        #99
+        Status: ✓ done
+        Milestone: v1.0
+        Created: 2025-10-01 09:00:00+00:00
+        Completed: 2025-10-03 15:30:00+00:00
+
+        Add user authentication
+
+        Implement OAuth 2.0 authentication with Google provider
+    """)
+
+    assert result.strip() == expected.strip()

@@ -1,4 +1,5 @@
 from rich.console import Console
+from rich.markdown import Markdown
 from rich.table import Table
 
 from quadro.models import Task
@@ -44,3 +45,25 @@ class Renderer:
             f"{total} tasks • {done_count} done • {progress_count} in progress • {todo_count} todo"
         )
         self.console.print(f"\n[dim]{summary}[/dim]")
+
+    def render_task_detail(self, task: Task) -> None:
+        self.console.print()
+        self.console.print(f"[bold cyan]#{task.id}[/bold cyan]")
+
+        status_text = f"{self.status_symbol(task.status)} {task.status.value}"
+        self.console.print(f"[dim]Status:[/dim] {status_text}")
+
+        if task.milestone:
+            self.console.print(f"[dim]Milestone:[/dim] {task.milestone}")
+
+        self.console.print(f"[dim]Created:[/dim] {task.created}")
+
+        if task.completed:
+            self.console.print(f"[dim]Completed:[/dim] {task.completed}")
+
+        self.console.print()
+        self.console.print(f"[bold]{task.title}[/bold]")
+
+        self.console.print()
+        self.console.print(Markdown(task.description))
+        self.console.print()
