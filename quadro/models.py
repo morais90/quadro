@@ -21,7 +21,14 @@ class Task:
     status: TaskStatus
     milestone: str | None
     created: datetime
-    completed: datetime | None
+    completed: datetime | None = None
+
+    def __post_init__(self) -> None:
+        if self.status == TaskStatus.DONE and self.completed is None:
+            self.completed = datetime.now(UTC)
+        elif self.status != TaskStatus.DONE and self.completed is not None:
+            msg = "Only completed tasks can have a 'completed' timestamp"
+            raise ValueError(msg)
 
     @classmethod
     def from_markdown(cls, content: str, task_id: int, file_path: str | Path) -> "Task":
@@ -83,3 +90,25 @@ class Task:
             created=created,
             completed=completed,
         )
+
+    def to_markdown(self) -> str:
+        metadata = {
+            "status": self.status.value,
+            "created": self.created.isoformat(),
+        }
+
+        if self.milestone is not None:
+            metadata["milestone"] = self.milestone
+
+        if self.completed is not None:
+            metadata["completed"] = self.completed.isoformat()
+
+        post = frontmatter.Post(content="", **metadata)
+        frontmatter_str = frontmatter.dumps(post).strip()
+
+        parts = [frontmatter_str, "", f"# {self.title}"]
+
+        if self.description:
+            parts.extend(["", self.description])
+
+        return "\n".join(parts) + "\n"
