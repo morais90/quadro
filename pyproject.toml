@@ -38,6 +38,10 @@ ignore = ["D", "COM812", "ISC001"]
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101", "PLR2004", "SLF001"]
 
+[[tool.mypy.overrides]]
+module = "tests.*"
+disable_error_code = ["misc"]
+
 [tool.ruff.lint.isort]
 force-single-line = true
 lines-after-imports = 2
