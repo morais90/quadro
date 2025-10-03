@@ -6,6 +6,7 @@ from rich.console import Console
 
 from quadro.models import Task
 from quadro.models import TaskStatus
+from quadro.renderer import Renderer
 from quadro.storage import TaskStorage
 
 
@@ -41,6 +42,16 @@ def add(title: str, milestone: str | None) -> None:
 
 
 @main.command("list")
-def list_tasks() -> None:
+@click.option("--milestone", default=None, help="Filter tasks by milestone")
+def list_tasks(milestone: str | None) -> None:
     console = Console()
-    console.print("List command not yet implemented")
+    storage = TaskStorage()
+    renderer = Renderer(console)
+
+    tasks = storage.load_all_tasks()
+
+    if not tasks:
+        console.print("[yellow]No tasks found. Create one with 'quadro add <title>'[/yellow]")
+        return
+
+    renderer.render_task_list(tasks, milestone_filter=milestone)

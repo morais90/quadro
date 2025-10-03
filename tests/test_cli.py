@@ -1,4 +1,5 @@
 from pathlib import Path
+from textwrap import dedent
 
 import pytest
 from click.testing import CliRunner
@@ -12,15 +13,64 @@ def runner() -> CliRunner:
 
 
 def test_main_without_command_invokes_list(runner: CliRunner) -> None:
-    result = runner.invoke(main, [])
-    assert result.exit_code == 0
-    assert result.output == "List command not yet implemented\n"
+    with runner.isolated_filesystem():
+        result = runner.invoke(main, [])
+        assert result.exit_code == 0
+        assert result.output == "No tasks found. Create one with 'quadro add <title>'\n"
 
 
-def test_list_command(runner: CliRunner) -> None:
-    result = runner.invoke(main, ["list"])
-    assert result.exit_code == 0
-    assert result.output == "List command not yet implemented\n"
+def test_list_command_with_no_tasks(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        result = runner.invoke(main, ["list"])
+        assert result.exit_code == 0
+        assert result.output == "No tasks found. Create one with 'quadro add <title>'\n"
+
+
+def test_list_command_with_tasks(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        runner.invoke(main, ["add", "Task 1", "--milestone", "mvp"])
+        runner.invoke(main, ["add", "Task 2"])
+        runner.invoke(main, ["add", "Task 3", "--milestone", "mvp"])
+
+        result = runner.invoke(main, ["list"])
+
+        expected = dedent("""
+            ┏━━━━━━━━━━━┳━━━━┳━━━━━━━━┳━━━━━━━━┓
+            ┃ Milestone ┃ ID ┃ Title  ┃ Status ┃
+            ┡━━━━━━━━━━━╇━━━━╇━━━━━━━━╇━━━━━━━━┩
+            │ -         │ 2  │ Task 2 │ ○ todo │
+            │ mvp       │ 1  │ Task 1 │ ○ todo │
+            │ mvp       │ 3  │ Task 3 │ ○ todo │
+            └───────────┴────┴────────┴────────┘
+
+            3 tasks • 0 done • 0 in progress • 3 todo
+        """)
+
+        assert result.exit_code == 0
+        assert result.output.strip() == expected.strip()
+
+
+def test_list_command_with_milestone_filter(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        runner.invoke(main, ["add", "Task 1", "--milestone", "mvp"])
+        runner.invoke(main, ["add", "Task 2"])
+        runner.invoke(main, ["add", "Task 3", "--milestone", "mvp"])
+
+        result = runner.invoke(main, ["list", "--milestone", "mvp"])
+
+        expected = dedent("""
+            ┏━━━━━━━━━━━┳━━━━┳━━━━━━━━┳━━━━━━━━┓
+            ┃ Milestone ┃ ID ┃ Title  ┃ Status ┃
+            ┡━━━━━━━━━━━╇━━━━╇━━━━━━━━╇━━━━━━━━┩
+            │ mvp       │ 1  │ Task 1 │ ○ todo │
+            │ mvp       │ 3  │ Task 3 │ ○ todo │
+            └───────────┴────┴────────┴────────┘
+
+            2 tasks • 0 done • 0 in progress • 2 todo
+        """)
+
+        assert result.exit_code == 0
+        assert result.output.strip() == expected.strip()
 
 
 def test_add_command(runner: CliRunner) -> None:
