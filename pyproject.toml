@@ -42,6 +42,10 @@ ignore = ["D", "COM812", "ISC001"]
 module = "tests.*"
 disable_error_code = ["misc"]
 
+[[tool.mypy.overrides]]
+module = "frontmatter"
+ignore_missing_imports = true
+
 [tool.ruff.lint.isort]
 force-single-line = true
 lines-after-imports = 2

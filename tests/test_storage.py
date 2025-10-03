@@ -132,3 +132,58 @@ def test_save_task_overwrites_existing(tmp_path: Path) -> None:
     assert "# Updated Task" in content
     assert "status: done" in content
     assert "# Original Task" not in content
+
+
+def test_load_task_from_root(tmp_path: Path) -> None:
+    storage = TaskStorage(base_path=tmp_path)
+    task = Task(
+        id=1,
+        title="Test Task",
+        description="Test description",
+        status=TaskStatus.TODO,
+        milestone=None,
+        created=datetime(2025, 10, 3, 9, 30, 15, tzinfo=UTC),
+    )
+
+    storage.save_task(task)
+    loaded_task = storage.load_task(1)
+
+    assert loaded_task is not None
+    assert loaded_task.id == 1
+    assert loaded_task.title == "Test Task"
+    assert loaded_task.description == "Test description"
+    assert loaded_task.status == TaskStatus.TODO
+
+
+def test_load_task_from_milestone(tmp_path: Path) -> None:
+    storage = TaskStorage(base_path=tmp_path)
+    task = Task(
+        id=5,
+        title="Milestone Task",
+        description="In milestone",
+        status=TaskStatus.PROGRESS,
+        milestone="mvp",
+        created=datetime(2025, 10, 3, 10, 0, 0, tzinfo=UTC),
+    )
+
+    storage.save_task(task)
+    loaded_task = storage.load_task(5)
+
+    assert loaded_task is not None
+    assert loaded_task.id == 5
+    assert loaded_task.title == "Milestone Task"
+    assert loaded_task.milestone == "mvp"
+
+
+def test_load_task_not_found(tmp_path: Path) -> None:
+    storage = TaskStorage(base_path=tmp_path)
+    loaded_task = storage.load_task(999)
+
+    assert loaded_task is None
+
+
+def test_load_task_nonexistent_directory(tmp_path: Path) -> None:
+    storage = TaskStorage(base_path=tmp_path / "nonexistent")
+    loaded_task = storage.load_task(1)
+
+    assert loaded_task is None
