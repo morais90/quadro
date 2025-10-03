@@ -93,3 +93,11 @@ class TaskStorage:
             old_file_path.unlink()
 
         return new_file_path
+
+    def get_milestones(self) -> list[str]:
+        if not self.base_path.exists():
+            return []
+
+        milestones = [item.name for item in self.base_path.iterdir() if item.is_dir()]
+
+        return sorted(milestones)

@@ -349,3 +349,85 @@ def test_move_task_not_found(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="Task 999 not found"):
         storage.move_task(999, "mvp")
+
+
+def test_get_milestones_empty_directory(tmp_path: Path) -> None:
+    storage = TaskStorage(base_path=tmp_path)
+    milestones = storage.get_milestones()
+
+    assert milestones == []
+
+
+def test_get_milestones_nonexistent_directory(tmp_path: Path) -> None:
+    storage = TaskStorage(base_path=tmp_path / "nonexistent")
+    milestones = storage.get_milestones()
+
+    assert milestones == []
+
+
+def test_get_milestones_with_multiple_milestones(tmp_path: Path) -> None:
+    storage = TaskStorage(base_path=tmp_path)
+
+    task1 = Task(
+        id=1,
+        title="MVP Task",
+        description="Task 1",
+        status=TaskStatus.TODO,
+        milestone="mvp",
+        created=datetime(2025, 10, 3, 9, 0, 0, tzinfo=UTC),
+    )
+
+    task2 = Task(
+        id=2,
+        title="V2 Task",
+        description="Task 2",
+        status=TaskStatus.TODO,
+        milestone="v2",
+        created=datetime(2025, 10, 3, 10, 0, 0, tzinfo=UTC),
+    )
+
+    task3 = Task(
+        id=3,
+        title="Beta Task",
+        description="Task 3",
+        status=TaskStatus.TODO,
+        milestone="beta",
+        created=datetime(2025, 10, 3, 11, 0, 0, tzinfo=UTC),
+    )
+
+    storage.save_task(task1)
+    storage.save_task(task2)
+    storage.save_task(task3)
+
+    milestones = storage.get_milestones()
+
+    assert milestones == ["beta", "mvp", "v2"]
+
+
+def test_get_milestones_ignores_files_in_root(tmp_path: Path) -> None:
+    storage = TaskStorage(base_path=tmp_path)
+
+    task1 = Task(
+        id=1,
+        title="Root Task",
+        description="In root",
+        status=TaskStatus.TODO,
+        milestone=None,
+        created=datetime(2025, 10, 3, 9, 0, 0, tzinfo=UTC),
+    )
+
+    task2 = Task(
+        id=2,
+        title="Milestone Task",
+        description="In milestone",
+        status=TaskStatus.TODO,
+        milestone="mvp",
+        created=datetime(2025, 10, 3, 10, 0, 0, tzinfo=UTC),
+    )
+
+    storage.save_task(task1)
+    storage.save_task(task2)
+
+    milestones = storage.get_milestones()
+
+    assert milestones == ["mvp"]
