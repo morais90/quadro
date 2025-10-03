@@ -135,3 +135,73 @@ def test_render_task_detail_completed() -> None:
     """)
 
     assert result.strip() == expected.strip()
+
+
+def test_render_milestones() -> None:
+    output = StringIO()
+    console = Console(file=output, width=100)
+    renderer = Renderer(console=console)
+
+    tasks = [
+        Task(
+            id=1,
+            title="Task 1",
+            description="Description 1",
+            status=TaskStatus.DONE,
+            milestone="mvp",
+            created=datetime(2025, 10, 1, 9, 0, 0, tzinfo=UTC),
+            completed=datetime(2025, 10, 2, 10, 0, 0, tzinfo=UTC),
+        ),
+        Task(
+            id=2,
+            title="Task 2",
+            description="Description 2",
+            status=TaskStatus.DONE,
+            milestone="mvp",
+            created=datetime(2025, 10, 1, 10, 0, 0, tzinfo=UTC),
+            completed=datetime(2025, 10, 2, 11, 0, 0, tzinfo=UTC),
+        ),
+        Task(
+            id=3,
+            title="Task 3",
+            description="Description 3",
+            status=TaskStatus.PROGRESS,
+            milestone="mvp",
+            created=datetime(2025, 10, 1, 11, 0, 0, tzinfo=UTC),
+            completed=None,
+        ),
+        Task(
+            id=4,
+            title="Task 4",
+            description="Description 4",
+            status=TaskStatus.TODO,
+            milestone="v2.0",
+            created=datetime(2025, 10, 1, 12, 0, 0, tzinfo=UTC),
+            completed=None,
+        ),
+        Task(
+            id=5,
+            title="Task 5",
+            description="Description 5",
+            status=TaskStatus.DONE,
+            milestone=None,
+            created=datetime(2025, 10, 1, 13, 0, 0, tzinfo=UTC),
+            completed=datetime(2025, 10, 2, 14, 0, 0, tzinfo=UTC),
+        ),
+    ]
+
+    renderer.render_milestones(tasks)
+
+    result = output.getvalue()
+
+    expected = dedent("""
+        ┏━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┓
+        ┃ Milestone    ┃ Tasks ┃ Done ┃ Progress                                 ┃ Completion ┃
+        ┡━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━┩
+        │ No Milestone │ 1     │ 1    │ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ │ 100.0%     │
+        │ mvp          │ 3     │ 2    │ ━━━━━━━━━━━━━━━━━━━━━━━━━━╸              │ 66.7%      │
+        │ v2.0         │ 1     │ 0    │                                          │ 0.0%       │
+        └──────────────┴───────┴──────┴──────────────────────────────────────────┴────────────┘
+    """)
+
+    assert result.strip() == expected.strip()

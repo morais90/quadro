@@ -1,5 +1,6 @@
 from rich.console import Console
 from rich.markdown import Markdown
+from rich.progress_bar import ProgressBar
 from rich.table import Table
 
 from quadro.models import Task
@@ -67,3 +68,38 @@ class Renderer:
         self.console.print()
         self.console.print(Markdown(task.description))
         self.console.print()
+
+    def render_milestones(self, tasks: list[Task]) -> None:
+        milestone_data: dict[str, dict[str, int]] = {}
+        for task in tasks:
+            milestone_name = task.milestone or "No Milestone"
+            if milestone_name not in milestone_data:
+                milestone_data[milestone_name] = {"total": 0, "done": 0}
+            milestone_data[milestone_name]["total"] += 1
+            if task.status == TaskStatus.DONE:
+                milestone_data[milestone_name]["done"] += 1
+
+        table = Table(show_header=True, header_style="bold magenta")
+        table.add_column("Milestone", style="cyan")
+        table.add_column("Tasks", style="yellow")
+        table.add_column("Done", style="green")
+        table.add_column("Progress", style="white")
+        table.add_column("Completion", style="white")
+
+        for milestone_name in sorted(milestone_data.keys()):
+            data = milestone_data[milestone_name]
+            total = data["total"]
+            done = data["done"]
+            completion_pct = (done / total * 100) if total > 0 else 0
+
+            progress_bar = ProgressBar(total=total, completed=done, width=40)
+
+            table.add_row(
+                milestone_name,
+                str(total),
+                str(done),
+                progress_bar,
+                f"{completion_pct:.1f}%",
+            )
+
+        self.console.print(table)
