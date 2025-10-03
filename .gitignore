@@ -18,8 +18,8 @@ dist/
 # Virtual environment
 .venv/
 
-# Package management
-uv.lock
-
 # Application data
 tasks/
+
+# Project planning
+roadmap.md
