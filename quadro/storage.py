@@ -66,3 +66,30 @@ class TaskStorage:
                 tasks.append(task)
 
         return tasks
+
+    def move_task(self, task_id: int, to_milestone: str | None) -> Path:
+        task = self.load_task(task_id)
+        if task is None:
+            msg = f"Task {task_id} not found"
+            raise ValueError(msg)
+
+        pattern = re.compile(r"^(\d+)\.md$")
+        old_file_path = None
+
+        for file_path in self.base_path.rglob("*.md"):
+            match = pattern.match(file_path.name)
+            if match and int(match.group(1)) == task_id:
+                old_file_path = file_path
+                break
+
+        if old_file_path is None:
+            msg = f"Task file for {task_id} not found"
+            raise ValueError(msg)
+
+        task.milestone = to_milestone
+        new_file_path = self.save_task(task)
+
+        if old_file_path != new_file_path:
+            old_file_path.unlink()
+
+        return new_file_path

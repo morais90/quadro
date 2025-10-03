@@ -2,6 +2,8 @@ from datetime import UTC
 from datetime import datetime
 from pathlib import Path
 
+import pytest
+
 from quadro.models import Task
 from quadro.models import TaskStatus
 from quadro.storage import TaskStorage
@@ -265,3 +267,85 @@ def test_load_all_tasks_ignores_non_numeric_files(tmp_path: Path) -> None:
 
     assert len(tasks) == 1
     assert tasks[0].id == 1
+
+
+def test_move_task_from_root_to_milestone(tmp_path: Path) -> None:
+    storage = TaskStorage(base_path=tmp_path)
+    task = Task(
+        id=1,
+        title="Task to Move",
+        description="Moving to milestone",
+        status=TaskStatus.TODO,
+        milestone=None,
+        created=datetime(2025, 10, 3, 9, 0, 0, tzinfo=UTC),
+    )
+
+    storage.save_task(task)
+    assert (tmp_path / "1.md").exists()
+
+    new_path = storage.move_task(1, "mvp")
+
+    assert new_path == tmp_path / "mvp" / "1.md"
+    assert new_path.exists()
+    assert not (tmp_path / "1.md").exists()
+
+    moved_task = storage.load_task(1)
+    assert moved_task is not None
+    assert moved_task.milestone == "mvp"
+
+
+def test_move_task_from_milestone_to_root(tmp_path: Path) -> None:
+    storage = TaskStorage(base_path=tmp_path)
+    task = Task(
+        id=2,
+        title="Milestone Task",
+        description="Moving to root",
+        status=TaskStatus.PROGRESS,
+        milestone="mvp",
+        created=datetime(2025, 10, 3, 10, 0, 0, tzinfo=UTC),
+    )
+
+    storage.save_task(task)
+    assert (tmp_path / "mvp" / "2.md").exists()
+
+    new_path = storage.move_task(2, None)
+
+    assert new_path == tmp_path / "2.md"
+    assert new_path.exists()
+    assert not (tmp_path / "mvp" / "2.md").exists()
+
+    moved_task = storage.load_task(2)
+    assert moved_task is not None
+    assert moved_task.milestone is None
+
+
+def test_move_task_between_milestones(tmp_path: Path) -> None:
+    storage = TaskStorage(base_path=tmp_path)
+    task = Task(
+        id=3,
+        title="Moving Task",
+        description="Between milestones",
+        status=TaskStatus.TODO,
+        milestone="mvp",
+        created=datetime(2025, 10, 3, 11, 0, 0, tzinfo=UTC),
+    )
+
+    storage.save_task(task)
+    assert (tmp_path / "mvp" / "3.md").exists()
+
+    new_path = storage.move_task(3, "v2")
+
+    assert new_path == tmp_path / "v2" / "3.md"
+    assert new_path.exists()
+    assert not (tmp_path / "mvp" / "3.md").exists()
+
+    moved_task = storage.load_task(3)
+    assert moved_task is not None
+    assert moved_task.milestone == "v2"
+
+
+def test_move_task_not_found(tmp_path: Path) -> None:
+    storage = TaskStorage(base_path=tmp_path)
+
+    with pytest.raises(ValueError, match="Task 999 not found"):
+        storage.move_task(999, "mvp")
