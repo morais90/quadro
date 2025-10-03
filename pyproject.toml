@@ -45,3 +45,9 @@ lines-after-imports = 2
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
+
+[tool.bandit]
+targets = ["quadro"]
+exclude_dirs = ["tests", ".venv"]
+skips = []
+severity = "medium"
