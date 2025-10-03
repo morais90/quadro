@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Tools
+.mypy_cache/
+.ruff_cache/
+
+# Build
+dist/
+*.egg-info/
+
+# Virtual environment
+.venv/
+
+# Package management
+uv.lock
+
+# Application data
+tasks/
