@@ -25,3 +25,23 @@ dev-dependencies = [
     "bandit>=1.7.5",
     "pre-commit>=3.5.0",
 ]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+exclude = [".git", "__pycache__", ".mypy_cache", ".pytest_cache", ".ruff_cache"]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = ["D", "COM812", "ISC001"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "PLR2004", "SLF001"]
+
+[tool.ruff.lint.isort]
+force-single-line = true
+lines-after-imports = 2
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
