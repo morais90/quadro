@@ -187,3 +187,81 @@ def test_load_task_nonexistent_directory(tmp_path: Path) -> None:
     loaded_task = storage.load_task(1)
 
     assert loaded_task is None
+
+
+def test_load_all_tasks_empty_directory(tmp_path: Path) -> None:
+    storage = TaskStorage(base_path=tmp_path)
+    tasks = storage.load_all_tasks()
+
+    assert tasks == []
+
+
+def test_load_all_tasks_nonexistent_directory(tmp_path: Path) -> None:
+    storage = TaskStorage(base_path=tmp_path / "nonexistent")
+    tasks = storage.load_all_tasks()
+
+    assert tasks == []
+
+
+def test_load_all_tasks_with_multiple_tasks(tmp_path: Path) -> None:
+    storage = TaskStorage(base_path=tmp_path)
+
+    task1 = Task(
+        id=1,
+        title="Task 1",
+        description="First task",
+        status=TaskStatus.TODO,
+        milestone=None,
+        created=datetime(2025, 10, 3, 9, 0, 0, tzinfo=UTC),
+    )
+
+    task2 = Task(
+        id=2,
+        title="Task 2",
+        description="Second task",
+        status=TaskStatus.PROGRESS,
+        milestone="mvp",
+        created=datetime(2025, 10, 3, 10, 0, 0, tzinfo=UTC),
+    )
+
+    task3 = Task(
+        id=3,
+        title="Task 3",
+        description="Third task",
+        status=TaskStatus.DONE,
+        milestone="mvp",
+        created=datetime(2025, 10, 3, 11, 0, 0, tzinfo=UTC),
+        completed=datetime(2025, 10, 3, 12, 0, 0, tzinfo=UTC),
+    )
+
+    storage.save_task(task1)
+    storage.save_task(task2)
+    storage.save_task(task3)
+
+    tasks = storage.load_all_tasks()
+
+    assert len(tasks) == 3
+    assert {task.id for task in tasks} == {1, 2, 3}
+    assert {task.title for task in tasks} == {"Task 1", "Task 2", "Task 3"}
+
+
+def test_load_all_tasks_ignores_non_numeric_files(tmp_path: Path) -> None:
+    storage = TaskStorage(base_path=tmp_path)
+
+    task = Task(
+        id=1,
+        title="Task 1",
+        description="Valid task",
+        status=TaskStatus.TODO,
+        milestone=None,
+        created=datetime(2025, 10, 3, 9, 0, 0, tzinfo=UTC),
+    )
+
+    storage.save_task(task)
+    (tmp_path / "README.md").write_text("# README")
+    (tmp_path / "notes.md").write_text("# Notes")
+
+    tasks = storage.load_all_tasks()
+
+    assert len(tasks) == 1
+    assert tasks[0].id == 1

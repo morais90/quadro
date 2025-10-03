@@ -49,3 +49,20 @@ class TaskStorage:
                 return Task.from_markdown(content, task_id, str(file_path))
 
         return None
+
+    def load_all_tasks(self) -> list[Task]:
+        if not self.base_path.exists():
+            return []
+
+        tasks = []
+        pattern = re.compile(r"^(\d+)\.md$")
+
+        for file_path in self.base_path.rglob("*.md"):
+            match = pattern.match(file_path.name)
+            if match:
+                task_id = int(match.group(1))
+                content = file_path.read_text()
+                task = Task.from_markdown(content, task_id, str(file_path))
+                tasks.append(task)
+
+        return tasks
