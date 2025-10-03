@@ -1,6 +1,8 @@
 import re
 from pathlib import Path
 
+from quadro.models import Task
+
 
 class TaskStorage:
     def __init__(self, base_path: Path = Path("tasks")) -> None:
@@ -20,3 +22,16 @@ class TaskStorage:
                 max_id = max(max_id, task_id)
 
         return max_id + 1
+
+    def save_task(self, task: Task) -> Path:
+        if task.milestone is not None:
+            task_dir = self.base_path / task.milestone
+            task_dir.mkdir(parents=True, exist_ok=True)
+        else:
+            task_dir = self.base_path
+            task_dir.mkdir(parents=True, exist_ok=True)
+
+        file_path = task_dir / f"{task.id}.md"
+        file_path.write_text(task.to_markdown())
+
+        return file_path
