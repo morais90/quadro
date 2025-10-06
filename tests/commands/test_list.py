@@ -1,0 +1,140 @@
+from datetime import UTC
+from datetime import datetime
+from textwrap import dedent
+from unittest.mock import patch
+
+import pytest
+from click.testing import CliRunner
+from freezegun import freeze_time
+
+from quadro.cli import main
+from quadro.commands.add import add_task
+from quadro.commands.list import list_tasks
+from quadro.models import Task
+from quadro.models import TaskStatus
+
+
+@pytest.fixture
+def runner() -> CliRunner:
+    return CliRunner()
+
+
+class TestListTasks:
+    def test_list_tasks_empty(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            tasks = list_tasks()
+
+            assert tasks == []
+
+    @freeze_time("2025-10-06 12:00:00")
+    def test_list_tasks_with_tasks(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            add_task("Task 1", milestone="mvp")
+            add_task("Task 2")
+            add_task("Task 3", milestone="mvp")
+
+            tasks = list_tasks()
+
+            assert len(tasks) == 3
+            assert tasks[0] == Task(
+                id=1,
+                title="Task 1",
+                description="",
+                status=TaskStatus.TODO,
+                milestone="mvp",
+                created=datetime(2025, 10, 6, 12, 0, 0, tzinfo=UTC),
+                completed=None,
+            )
+            assert tasks[1] == Task(
+                id=2,
+                title="Task 2",
+                description="",
+                status=TaskStatus.TODO,
+                milestone=None,
+                created=datetime(2025, 10, 6, 12, 0, 0, tzinfo=UTC),
+                completed=None,
+            )
+            assert tasks[2] == Task(
+                id=3,
+                title="Task 3",
+                description="",
+                status=TaskStatus.TODO,
+                milestone="mvp",
+                created=datetime(2025, 10, 6, 12, 0, 0, tzinfo=UTC),
+                completed=None,
+            )
+
+    def test_list_tasks_returns_all_tasks(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            add_task("Task 1", milestone="mvp")
+            add_task("Task 2")
+            add_task("Task 3", milestone="v2.0")
+
+            tasks = list_tasks()
+
+            assert len(tasks) == 3
+
+
+class TestListCommandCLI:
+    def test_list_command_with_no_tasks(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            result = runner.invoke(main, ["list"])
+            assert result.exit_code == 0
+            assert result.output == "No tasks found. Create one with 'quadro add <title>'\n"
+
+    def test_list_command_with_tasks(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["add", "Task 1", "--milestone", "mvp"])
+            runner.invoke(main, ["add", "Task 2"])
+            runner.invoke(main, ["add", "Task 3", "--milestone", "mvp"])
+
+            result = runner.invoke(main, ["list"])
+
+            expected = dedent("""
+                ┏━━━━━━━━━━━┳━━━━┳━━━━━━━━┳━━━━━━━━┓
+                ┃ Milestone ┃ ID ┃ Title  ┃ Status ┃
+                ┡━━━━━━━━━━━╇━━━━╇━━━━━━━━╇━━━━━━━━┩
+                │ mvp       │ 1  │ Task 1 │ ○ todo │
+                │ -         │ 2  │ Task 2 │ ○ todo │
+                │ mvp       │ 3  │ Task 3 │ ○ todo │
+                └───────────┴────┴────────┴────────┘
+
+                3 tasks • 0 done • 0 in progress • 3 todo
+            """)
+
+            assert result.exit_code == 0
+            assert result.output.strip() == expected.strip()
+
+    def test_list_command_with_milestone_filter(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            runner.invoke(main, ["add", "Task 1", "--milestone", "mvp"])
+            runner.invoke(main, ["add", "Task 2"])
+            runner.invoke(main, ["add", "Task 3", "--milestone", "mvp"])
+
+            result = runner.invoke(main, ["list", "--milestone", "mvp"])
+
+            expected = dedent("""
+                ┏━━━━━━━━━━━┳━━━━┳━━━━━━━━┳━━━━━━━━┓
+                ┃ Milestone ┃ ID ┃ Title  ┃ Status ┃
+                ┡━━━━━━━━━━━╇━━━━╇━━━━━━━━╇━━━━━━━━┩
+                │ mvp       │ 1  │ Task 1 │ ○ todo │
+                │ mvp       │ 3  │ Task 3 │ ○ todo │
+                └───────────┴────┴────────┴────────┘
+
+                2 tasks • 0 done • 0 in progress • 2 todo
+            """)
+
+            assert result.exit_code == 0
+            assert result.output.strip() == expected.strip()
+
+    def test_list_command_permission_error(self, runner: CliRunner) -> None:
+        with (
+            runner.isolated_filesystem(),
+            patch("quadro.storage.TaskStorage.load_all_tasks") as mock_load,
+        ):
+            mock_load.side_effect = PermissionError("tasks")
+            result = runner.invoke(main, ["list"])
+
+            assert result.exit_code == 1
+            assert "✗ Permission denied" in result.output
+            assert "Cannot access: tasks" in result.output

@@ -21,60 +21,6 @@ def test_main_without_command_invokes_list(runner: CliRunner) -> None:
         assert result.output == "No tasks found. Create one with 'quadro add <title>'\n"
 
 
-def test_list_command_with_no_tasks(runner: CliRunner) -> None:
-    with runner.isolated_filesystem():
-        result = runner.invoke(main, ["list"])
-        assert result.exit_code == 0
-        assert result.output == "No tasks found. Create one with 'quadro add <title>'\n"
-
-
-def test_list_command_with_tasks(runner: CliRunner) -> None:
-    with runner.isolated_filesystem():
-        runner.invoke(main, ["add", "Task 1", "--milestone", "mvp"])
-        runner.invoke(main, ["add", "Task 2"])
-        runner.invoke(main, ["add", "Task 3", "--milestone", "mvp"])
-
-        result = runner.invoke(main, ["list"])
-
-        expected = dedent("""
-            ┏━━━━━━━━━━━┳━━━━┳━━━━━━━━┳━━━━━━━━┓
-            ┃ Milestone ┃ ID ┃ Title  ┃ Status ┃
-            ┡━━━━━━━━━━━╇━━━━╇━━━━━━━━╇━━━━━━━━┩
-            │ -         │ 2  │ Task 2 │ ○ todo │
-            │ mvp       │ 1  │ Task 1 │ ○ todo │
-            │ mvp       │ 3  │ Task 3 │ ○ todo │
-            └───────────┴────┴────────┴────────┘
-
-            3 tasks • 0 done • 0 in progress • 3 todo
-        """)
-
-        assert result.exit_code == 0
-        assert result.output.strip() == expected.strip()
-
-
-def test_list_command_with_milestone_filter(runner: CliRunner) -> None:
-    with runner.isolated_filesystem():
-        runner.invoke(main, ["add", "Task 1", "--milestone", "mvp"])
-        runner.invoke(main, ["add", "Task 2"])
-        runner.invoke(main, ["add", "Task 3", "--milestone", "mvp"])
-
-        result = runner.invoke(main, ["list", "--milestone", "mvp"])
-
-        expected = dedent("""
-            ┏━━━━━━━━━━━┳━━━━┳━━━━━━━━┳━━━━━━━━┓
-            ┃ Milestone ┃ ID ┃ Title  ┃ Status ┃
-            ┡━━━━━━━━━━━╇━━━━╇━━━━━━━━╇━━━━━━━━┩
-            │ mvp       │ 1  │ Task 1 │ ○ todo │
-            │ mvp       │ 3  │ Task 3 │ ○ todo │
-            └───────────┴────┴────────┴────────┘
-
-            2 tasks • 0 done • 0 in progress • 2 todo
-        """)
-
-        assert result.exit_code == 0
-        assert result.output.strip() == expected.strip()
-
-
 def test_start_command_valid_case(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         runner.invoke(main, ["add", "Test task"])
@@ -331,19 +277,6 @@ def test_edit_command_task_not_found(runner: CliRunner) -> None:
 
         assert result.exit_code == 1
         assert result.output == "✗ Task #999 not found\n"
-
-
-def test_list_command_permission_error(runner: CliRunner) -> None:
-    with (
-        runner.isolated_filesystem(),
-        patch("quadro.storage.TaskStorage.load_all_tasks") as mock_load,
-    ):
-        mock_load.side_effect = PermissionError("tasks")
-        result = runner.invoke(main, ["list"])
-
-        assert result.exit_code == 1
-        assert "✗ Permission denied" in result.output
-        assert "Cannot access: tasks" in result.output
 
 
 def test_start_command_permission_error(runner: CliRunner) -> None:

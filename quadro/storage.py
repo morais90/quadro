@@ -65,7 +65,7 @@ class TaskStorage:
                 task = Task.from_markdown(content, task_id, str(file_path))
                 tasks.append(task)
 
-        return tasks
+        return sorted(tasks, key=lambda t: t.id)
 
     def move_task(self, task_id: int, to_milestone: str | None) -> Path:
         task = self.load_task(task_id)

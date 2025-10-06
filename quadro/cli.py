@@ -8,6 +8,7 @@ import click
 from rich.console import Console
 
 from quadro.commands.add import add_task
+from quadro.commands.list import list_tasks as get_all_tasks
 from quadro.models import Task
 from quadro.models import TaskStatus
 from quadro.renderer import Renderer
@@ -75,10 +76,9 @@ def add(title: str, milestone: str | None) -> None:
 @handle_exceptions
 def list_tasks(milestone: str | None) -> None:
     console = Console()
-    storage = TaskStorage()
     renderer = Renderer(console)
 
-    tasks = storage.load_all_tasks()
+    tasks = get_all_tasks()
 
     if not tasks:
         console.print("[yellow]No tasks found. Create one with 'quadro add <title>'[/yellow]")

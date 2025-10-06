@@ -14,8 +14,6 @@ def runner() -> CliRunner:
 
 
 class TestAddTask:
-    """Test the add_task function logic."""
-
     def test_add_task_basic(self, runner: CliRunner) -> None:
         with runner.isolated_filesystem():
             task_id, file_path = add_task("Test task")
@@ -58,8 +56,6 @@ class TestAddTask:
 
 
 class TestAddCommandCLI:
-    """Test the CLI add command."""
-
     def test_add_command(self, runner: CliRunner) -> None:
         with runner.isolated_filesystem():
             result = runner.invoke(main, ["add", "Test task"])
