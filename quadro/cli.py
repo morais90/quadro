@@ -1,6 +1,4 @@
 from collections.abc import Callable
-from datetime import UTC
-from datetime import datetime
 from functools import wraps
 from typing import Any
 
@@ -8,13 +6,13 @@ import click
 from rich.console import Console
 
 from quadro.commands.add import add_task
+from quadro.commands.done import complete_task
 from quadro.commands.list import list_tasks as get_all_tasks
 from quadro.commands.start import start_task
 from quadro.exceptions import TaskAlreadyDoneError
 from quadro.exceptions import TaskAlreadyInProgressError
 from quadro.exceptions import TaskNotFoundError
 from quadro.models import Task
-from quadro.models import TaskStatus
 from quadro.renderer import Renderer
 from quadro.storage import TaskStorage
 
@@ -112,23 +110,15 @@ def start(task_id: int) -> None:
 @handle_exceptions
 def done(task_id: int) -> None:
     console = Console()
-    storage = TaskStorage()
 
-    task = storage.load_task(task_id)
-
-    if task is None:
-        console.print(f"[red]✗[/red] Task #{task_id} not found")
-        raise SystemExit(1)
-
-    if task.status == TaskStatus.DONE:
-        console.print(f"[yellow]![/yellow] Task #{task_id} is already done")
-        return
-
-    task.status = TaskStatus.DONE
-    task.completed = datetime.now(UTC)
-    storage.save_task(task)
-
-    console.print(f"[green]✓[/green] Completed task #{task_id}: {task.title}")
+    try:
+        task = complete_task(task_id)
+        console.print(f"[green]✓[/green] Completed task #{task_id}: {task.title}")
+    except TaskNotFoundError as e:
+        console.print(f"[red]✗[/red] {e}")
+        raise SystemExit(1) from None
+    except TaskAlreadyDoneError as e:
+        console.print(f"[yellow]![/yellow] {e}")
 
 
 @main.command("show")

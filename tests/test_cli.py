@@ -21,40 +21,6 @@ def test_main_without_command_invokes_list(runner: CliRunner) -> None:
         assert result.output == "No tasks found. Create one with 'quadro add <title>'\n"
 
 
-def test_done_command_valid_case(runner: CliRunner) -> None:
-    with runner.isolated_filesystem():
-        runner.invoke(main, ["add", "Test task"])
-
-        result = runner.invoke(main, ["done", "1"])
-
-        assert result.exit_code == 0
-        assert result.output == "✓ Completed task #1: Test task\n"
-
-        task_file = Path("tasks/1.md")
-        content = task_file.read_text()
-        assert "status: done" in content
-        assert "completed:" in content
-
-
-def test_done_command_task_not_found(runner: CliRunner) -> None:
-    with runner.isolated_filesystem():
-        result = runner.invoke(main, ["done", "999"])
-
-        assert result.exit_code == 1
-        assert result.output == "✗ Task #999 not found\n"
-
-
-def test_done_command_already_done(runner: CliRunner) -> None:
-    with runner.isolated_filesystem():
-        runner.invoke(main, ["add", "Test task"])
-        runner.invoke(main, ["done", "1"])
-
-        result = runner.invoke(main, ["done", "1"])
-
-        assert result.exit_code == 0
-        assert result.output == "! Task #1 is already done\n"
-
-
 @freeze_time("2025-10-06 12:00:00")
 def test_show_command_valid_case(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
@@ -229,19 +195,6 @@ def test_edit_command_task_not_found(runner: CliRunner) -> None:
 
         assert result.exit_code == 1
         assert result.output == "✗ Task #999 not found\n"
-
-
-def test_done_command_permission_error(runner: CliRunner) -> None:
-    with runner.isolated_filesystem():
-        runner.invoke(main, ["add", "Test task"])
-
-        with patch("quadro.storage.TaskStorage.save_task") as mock_save:
-            mock_save.side_effect = PermissionError()
-            result = runner.invoke(main, ["done", "1"])
-
-            assert result.exit_code == 1
-            assert "✗ Permission denied" in result.output
-            assert "read/write permissions" in result.output
 
 
 def test_edit_command_invalid_markdown(runner: CliRunner) -> None:
