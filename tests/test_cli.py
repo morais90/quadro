@@ -102,3 +102,51 @@ def test_add_command_with_milestone(runner: CliRunner) -> None:
         assert "# Task with milestone" in content
         assert "milestone: mvp" in content
         assert "status: todo" in content
+
+
+def test_start_command_valid_case(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        runner.invoke(main, ["add", "Test task"])
+
+        result = runner.invoke(main, ["start", "1"])
+
+        assert result.exit_code == 0
+        assert result.output == "✓ Started task #1: Test task\n"
+
+        task_file = Path("tasks/1.md")
+        content = task_file.read_text()
+        assert "status: progress" in content
+
+
+def test_start_command_task_not_found(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        result = runner.invoke(main, ["start", "999"])
+
+        assert result.exit_code == 1
+        assert result.output == "✗ Task #999 not found\n"
+
+
+def test_start_command_already_in_progress(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        runner.invoke(main, ["add", "Test task"])
+        runner.invoke(main, ["start", "1"])
+
+        result = runner.invoke(main, ["start", "1"])
+
+        assert result.exit_code == 0
+        assert result.output == "! Task #1 is already in progress\n"
+
+
+def test_start_command_already_done(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        runner.invoke(main, ["add", "Test task"])
+
+        task_file = Path("tasks/1.md")
+        content = task_file.read_text()
+        content = content.replace("status: todo", "status: done")
+        task_file.write_text(content)
+
+        result = runner.invoke(main, ["start", "1"])
+
+        assert result.exit_code == 0
+        assert result.output == "! Task #1 is already done\n"

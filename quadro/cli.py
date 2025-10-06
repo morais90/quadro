@@ -55,3 +55,29 @@ def list_tasks(milestone: str | None) -> None:
         return
 
     renderer.render_task_list(tasks, milestone_filter=milestone)
+
+
+@main.command("start")
+@click.argument("task_id", type=int)
+def start(task_id: int) -> None:
+    console = Console()
+    storage = TaskStorage()
+
+    task = storage.load_task(task_id)
+
+    if task is None:
+        console.print(f"[red]✗[/red] Task #{task_id} not found")
+        raise SystemExit(1)
+
+    if task.status == TaskStatus.PROGRESS:
+        console.print(f"[yellow]![/yellow] Task #{task_id} is already in progress")
+        return
+
+    if task.status == TaskStatus.DONE:
+        console.print(f"[yellow]![/yellow] Task #{task_id} is already done")
+        return
+
+    task.status = TaskStatus.PROGRESS
+    storage.save_task(task)
+
+    console.print(f"[green]✓[/green] Started task #{task_id}: {task.title}")
