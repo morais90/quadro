@@ -104,3 +104,19 @@ def done(task_id: int) -> None:
     storage.save_task(task)
 
     console.print(f"[green]✓[/green] Completed task #{task_id}: {task.title}")
+
+
+@main.command("show")
+@click.argument("task_id", type=int)
+def show(task_id: int) -> None:
+    console = Console()
+    storage = TaskStorage()
+    renderer = Renderer(console)
+
+    task = storage.load_task(task_id)
+
+    if task is None:
+        console.print(f"[red]✗[/red] Task #{task_id} not found")
+        raise SystemExit(1)
+
+    renderer.render_task_detail(task)
