@@ -1,5 +1,6 @@
 from pathlib import Path
 from textwrap import dedent
+from unittest.mock import patch
 
 import pytest
 from click.testing import CliRunner
@@ -306,6 +307,58 @@ def test_move_command_between_milestones(runner: CliRunner) -> None:
 def test_move_command_task_not_found(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         result = runner.invoke(main, ["move", "999", "--to", "mvp"])
+
+        assert result.exit_code == 1
+        assert result.output == "✗ Task #999 not found\n"
+
+
+def test_edit_command_success(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        runner.invoke(main, ["add", "Original task", "--milestone", "mvp"])
+
+        task_file = Path("tasks/mvp/1.md")
+        original_content = task_file.read_text()
+
+        edited_content = original_content.replace("Original task", "Edited task")
+
+        with patch("click.edit", return_value=edited_content):
+            result = runner.invoke(main, ["edit", "1"])
+
+        assert result.exit_code == 0
+        assert result.output == "✓ Updated task #1\n"
+
+        updated_content = task_file.read_text()
+        assert "Edited task" in updated_content
+
+
+def test_edit_command_cancelled(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        runner.invoke(main, ["add", "Test task"])
+
+        with patch("click.edit", return_value=None):
+            result = runner.invoke(main, ["edit", "1"])
+
+        assert result.exit_code == 0
+        assert result.output == "! Edit cancelled, no changes made\n"
+
+
+def test_edit_command_no_changes(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        runner.invoke(main, ["add", "Test task"])
+
+        task_file = Path("tasks/1.md")
+        original_content = task_file.read_text()
+
+        with patch("click.edit", return_value=original_content):
+            result = runner.invoke(main, ["edit", "1"])
+
+        assert result.exit_code == 0
+        assert result.output == "! No changes made\n"
+
+
+def test_edit_command_task_not_found(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        result = runner.invoke(main, ["edit", "999"])
 
         assert result.exit_code == 1
         assert result.output == "✗ Task #999 not found\n"

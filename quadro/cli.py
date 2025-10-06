@@ -169,3 +169,36 @@ def move(task_id: int, to: str) -> None:
     except ValueError as e:
         console.print(f"[red]✗[/red] {e}")
         raise SystemExit(1) from e
+
+
+@main.command("edit")
+@click.argument("task_id", type=int)
+def edit(task_id: int) -> None:
+    console = Console()
+    storage = TaskStorage()
+
+    task = storage.load_task(task_id)
+
+    if task is None:
+        console.print(f"[red]✗[/red] Task #{task_id} not found")
+        raise SystemExit(1)
+
+    original_content = task.to_markdown()
+
+    edited_content = click.edit(original_content, extension=".md")
+
+    if edited_content is None:
+        console.print("[yellow]![/yellow] Edit cancelled, no changes made")
+        return
+
+    if edited_content.strip() == original_content.strip():
+        console.print("[yellow]![/yellow] No changes made")
+        return
+
+    try:
+        updated_task = Task.from_markdown(edited_content, task_id, "edited")
+        storage.save_task(updated_task)
+        console.print(f"[green]✓[/green] Updated task #{task_id}")
+    except ValueError as e:
+        console.print(f"[red]✗[/red] Invalid task format: {e}")
+        raise SystemExit(1) from e
