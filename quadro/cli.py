@@ -8,6 +8,7 @@ from rich.console import Console
 from quadro.commands.add import add_task
 from quadro.commands.done import complete_task
 from quadro.commands.list import list_tasks as get_all_tasks
+from quadro.commands.milestones import list_milestones
 from quadro.commands.show import show_task
 from quadro.commands.start import start_task
 from quadro.exceptions import TaskAlreadyDoneError
@@ -141,21 +142,19 @@ def show(task_id: int) -> None:
 @handle_exceptions
 def milestones() -> None:
     console = Console()
-    storage = TaskStorage()
     renderer = Renderer(console)
 
-    tasks = storage.load_all_tasks()
-
-    if not tasks:
+    try:
+        milestone_tasks = list_milestones()
+    except TaskNotFoundError:
         console.print("[yellow]No tasks found. Create one with 'quadro add <title>'[/yellow]")
         return
 
-    milestone_tasks = [t for t in tasks if t.milestone is not None]
     if not milestone_tasks:
         console.print("[yellow]No milestones found. Add tasks with '--milestone <name>'[/yellow]")
         return
 
-    renderer.render_milestones(tasks)
+    renderer.render_milestones(milestone_tasks)
 
 
 @main.command("move")

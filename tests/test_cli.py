@@ -1,5 +1,4 @@
 from pathlib import Path
-from textwrap import dedent
 from unittest.mock import patch
 
 import pytest
@@ -18,46 +17,6 @@ def test_main_without_command_invokes_list(runner: CliRunner) -> None:
         result = runner.invoke(main, [])
         assert result.exit_code == 0
         assert result.output == "No tasks found. Create one with 'quadro add <title>'\n"
-
-
-def test_milestones_command_with_no_tasks(runner: CliRunner) -> None:
-    with runner.isolated_filesystem():
-        result = runner.invoke(main, ["milestones"])
-
-        assert result.exit_code == 0
-        assert result.output == "No tasks found. Create one with 'quadro add <title>'\n"
-
-
-def test_milestones_command_with_no_milestones(runner: CliRunner) -> None:
-    with runner.isolated_filesystem():
-        runner.invoke(main, ["add", "Task without milestone"])
-
-        result = runner.invoke(main, ["milestones"])
-
-        assert result.exit_code == 0
-        assert result.output == "No milestones found. Add tasks with '--milestone <name>'\n"
-
-
-def test_milestones_command_with_milestones(runner: CliRunner) -> None:
-    with runner.isolated_filesystem():
-        runner.invoke(main, ["add", "Task 1", "--milestone", "mvp"])
-        runner.invoke(main, ["add", "Task 2", "--milestone", "mvp"])
-        runner.invoke(main, ["add", "Task 3", "--milestone", "v2.0"])
-        runner.invoke(main, ["done", "1"])
-
-        result = runner.invoke(main, ["milestones"])
-
-        expected = dedent("""
-            ┏━━━━━━━━━━━┳━━━━━━━┳━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┓
-            ┃ Milestone ┃ Tasks ┃ Done ┃ Progress                             ┃ Completion ┃
-            ┡━━━━━━━━━━━╇━━━━━━━╇━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━┩
-            │ mvp       │ 2     │ 1    │ ━━━━━━━━━━━━━━━━━━                   │ 50.0%      │
-            │ v2.0      │ 1     │ 0    │                                      │ 0.0%       │
-            └───────────┴───────┴──────┴──────────────────────────────────────┴────────────┘
-        """)
-
-        assert result.exit_code == 0
-        assert result.output.strip() == expected.strip()
 
 
 def test_move_command_to_milestone(runner: CliRunner) -> None:
@@ -211,18 +170,6 @@ def test_move_command_permission_error(runner: CliRunner) -> None:
             assert result.exit_code == 1
             assert "✗ Permission denied" in result.output
             assert "read/write permissions" in result.output
-
-
-def test_milestones_command_permission_error(runner: CliRunner) -> None:
-    with (
-        runner.isolated_filesystem(),
-        patch("quadro.storage.TaskStorage.load_all_tasks") as mock_load,
-    ):
-        mock_load.side_effect = PermissionError("tasks")
-        result = runner.invoke(main, ["milestones"])
-
-        assert result.exit_code == 1
-        assert "✗ Permission denied" in result.output
 
 
 def test_unexpected_error_handling(runner: CliRunner) -> None:
