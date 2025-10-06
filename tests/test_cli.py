@@ -213,3 +213,43 @@ def test_show_command_task_not_found(runner: CliRunner) -> None:
 
         assert result.exit_code == 1
         assert result.output == "✗ Task #999 not found\n"
+
+
+def test_milestones_command_with_no_tasks(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        result = runner.invoke(main, ["milestones"])
+
+        assert result.exit_code == 0
+        assert result.output == "No tasks found. Create one with 'quadro add <title>'\n"
+
+
+def test_milestones_command_with_no_milestones(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        runner.invoke(main, ["add", "Task without milestone"])
+
+        result = runner.invoke(main, ["milestones"])
+
+        assert result.exit_code == 0
+        assert result.output == "No milestones found. Add tasks with '--milestone <name>'\n"
+
+
+def test_milestones_command_with_milestones(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        runner.invoke(main, ["add", "Task 1", "--milestone", "mvp"])
+        runner.invoke(main, ["add", "Task 2", "--milestone", "mvp"])
+        runner.invoke(main, ["add", "Task 3", "--milestone", "v2.0"])
+        runner.invoke(main, ["done", "1"])
+
+        result = runner.invoke(main, ["milestones"])
+
+        expected = dedent("""
+            ┏━━━━━━━━━━━┳━━━━━━━┳━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┓
+            ┃ Milestone ┃ Tasks ┃ Done ┃ Progress                             ┃ Completion ┃
+            ┡━━━━━━━━━━━╇━━━━━━━╇━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━┩
+            │ mvp       │ 2     │ 1    │ ━━━━━━━━━━━━━━━━━━                   │ 50.0%      │
+            │ v2.0      │ 1     │ 0    │                                      │ 0.0%       │
+            └───────────┴───────┴──────┴──────────────────────────────────────┴────────────┘
+        """)
+
+        assert result.exit_code == 0
+        assert result.output.strip() == expected.strip()

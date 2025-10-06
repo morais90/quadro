@@ -120,3 +120,23 @@ def show(task_id: int) -> None:
         raise SystemExit(1)
 
     renderer.render_task_detail(task)
+
+
+@main.command("milestones")
+def milestones() -> None:
+    console = Console()
+    storage = TaskStorage()
+    renderer = Renderer(console)
+
+    tasks = storage.load_all_tasks()
+
+    if not tasks:
+        console.print("[yellow]No tasks found. Create one with 'quadro add <title>'[/yellow]")
+        return
+
+    milestone_tasks = [t for t in tasks if t.milestone is not None]
+    if not milestone_tasks:
+        console.print("[yellow]No milestones found. Add tasks with '--milestone <name>'[/yellow]")
+        return
+
+    renderer.render_milestones(tasks)
