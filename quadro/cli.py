@@ -9,6 +9,7 @@ from quadro.commands.add import add_task
 from quadro.commands.done import complete_task
 from quadro.commands.list import list_tasks as get_all_tasks
 from quadro.commands.milestones import list_milestones
+from quadro.commands.move import move_task
 from quadro.commands.show import show_task
 from quadro.commands.start import start_task
 from quadro.exceptions import TaskAlreadyDoneError
@@ -163,22 +164,16 @@ def milestones() -> None:
 @handle_exceptions
 def move(task_id: int, to: str) -> None:
     console = Console()
-    storage = TaskStorage()
 
-    task = storage.load_task(task_id)
-
-    if task is None:
-        console.print(f"[red]✗[/red] Task #{task_id} not found")
-        raise SystemExit(1)
-
-    old_milestone = task.milestone or "root"
-    to_milestone = None if to == "root" else to
-
-    new_path = storage.move_task(task_id, to_milestone)
-    new_milestone = to_milestone or "root"
-
-    console.print(f"[green]✓[/green] Moved task #{task_id} from {old_milestone} to {new_milestone}")
-    console.print(f"[dim]New location: {new_path}[/dim]")
+    try:
+        old_milestone, new_milestone, new_path = move_task(task_id, to)
+        console.print(
+            f"[green]✓[/green] Moved task #{task_id} from {old_milestone} to {new_milestone}"
+        )
+        console.print(f"[dim]New location: {new_path}[/dim]")
+    except TaskNotFoundError as e:
+        console.print(f"[red]✗[/red] {e}")
+        raise SystemExit(1) from None
 
 
 @main.command("edit")
