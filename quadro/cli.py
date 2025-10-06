@@ -8,6 +8,7 @@ from rich.console import Console
 from quadro.commands.add import add_task
 from quadro.commands.done import complete_task
 from quadro.commands.list import list_tasks as get_all_tasks
+from quadro.commands.show import show_task
 from quadro.commands.start import start_task
 from quadro.exceptions import TaskAlreadyDoneError
 from quadro.exceptions import TaskAlreadyInProgressError
@@ -126,16 +127,14 @@ def done(task_id: int) -> None:
 @handle_exceptions
 def show(task_id: int) -> None:
     console = Console()
-    storage = TaskStorage()
     renderer = Renderer(console)
 
-    task = storage.load_task(task_id)
-
-    if task is None:
-        console.print(f"[red]✗[/red] Task #{task_id} not found")
-        raise SystemExit(1)
-
-    renderer.render_task_detail(task)
+    try:
+        task = show_task(task_id)
+        renderer.render_task_detail(task)
+    except TaskNotFoundError as e:
+        console.print(f"[red]✗[/red] {e}")
+        raise SystemExit(1) from None
 
 
 @main.command("milestones")

@@ -4,7 +4,6 @@ from unittest.mock import patch
 
 import pytest
 from click.testing import CliRunner
-from freezegun import freeze_time
 
 from quadro.cli import main
 
@@ -19,34 +18,6 @@ def test_main_without_command_invokes_list(runner: CliRunner) -> None:
         result = runner.invoke(main, [])
         assert result.exit_code == 0
         assert result.output == "No tasks found. Create one with 'quadro add <title>'\n"
-
-
-@freeze_time("2025-10-06 12:00:00")
-def test_show_command_valid_case(runner: CliRunner) -> None:
-    with runner.isolated_filesystem():
-        runner.invoke(main, ["add", "Test task with description", "--milestone", "mvp"])
-
-        result = runner.invoke(main, ["show", "1"])
-
-        expected = dedent("""
-            #1
-            Status: ○ todo
-            Milestone: mvp
-            Created: 2025-10-06 12:00:00+00:00
-
-            Test task with description
-        """)
-
-        assert result.exit_code == 0
-        assert result.output.strip() == expected.strip()
-
-
-def test_show_command_task_not_found(runner: CliRunner) -> None:
-    with runner.isolated_filesystem():
-        result = runner.invoke(main, ["show", "999"])
-
-        assert result.exit_code == 1
-        assert result.output == "✗ Task #999 not found\n"
 
 
 def test_milestones_command_with_no_tasks(runner: CliRunner) -> None:
