@@ -362,3 +362,135 @@ def test_edit_command_task_not_found(runner: CliRunner) -> None:
 
         assert result.exit_code == 1
         assert result.output == "✗ Task #999 not found\n"
+
+
+def test_add_command_permission_error(runner: CliRunner) -> None:
+    with runner.isolated_filesystem(), patch("quadro.storage.TaskStorage.save_task") as mock_save:
+        mock_save.side_effect = PermissionError()
+        result = runner.invoke(main, ["add", "Test task"])
+
+        assert result.exit_code == 1
+        assert "✗ Permission denied" in result.output
+        assert "read/write permissions" in result.output
+
+
+def test_add_command_os_error(runner: CliRunner) -> None:
+    with runner.isolated_filesystem(), patch("quadro.storage.TaskStorage.save_task") as mock_save:
+        mock_save.side_effect = OSError("No space left on device")
+        result = runner.invoke(main, ["add", "Test task"])
+
+        assert result.exit_code == 1
+        assert "✗ System error" in result.output
+        assert "No space left on device" in result.output
+        assert "disk space" in result.output
+
+
+def test_list_command_permission_error(runner: CliRunner) -> None:
+    with (
+        runner.isolated_filesystem(),
+        patch("quadro.storage.TaskStorage.load_all_tasks") as mock_load,
+    ):
+        mock_load.side_effect = PermissionError("tasks")
+        result = runner.invoke(main, ["list"])
+
+        assert result.exit_code == 1
+        assert "✗ Permission denied" in result.output
+        assert "Cannot access: tasks" in result.output
+
+
+def test_start_command_permission_error(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        runner.invoke(main, ["add", "Test task"])
+
+        with patch("quadro.storage.TaskStorage.save_task") as mock_save:
+            mock_save.side_effect = PermissionError()
+            result = runner.invoke(main, ["start", "1"])
+
+            assert result.exit_code == 1
+            assert "✗ Permission denied" in result.output
+            assert "read/write permissions" in result.output
+
+
+def test_done_command_permission_error(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        runner.invoke(main, ["add", "Test task"])
+
+        with patch("quadro.storage.TaskStorage.save_task") as mock_save:
+            mock_save.side_effect = PermissionError()
+            result = runner.invoke(main, ["done", "1"])
+
+            assert result.exit_code == 1
+            assert "✗ Permission denied" in result.output
+            assert "read/write permissions" in result.output
+
+
+def test_edit_command_invalid_markdown(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        runner.invoke(main, ["add", "Test task"])
+
+        invalid_content = "---\nstatus: invalid\n---\nNo title"
+
+        with patch("click.edit", return_value=invalid_content):
+            result = runner.invoke(main, ["edit", "1"])
+
+            assert result.exit_code == 1
+            assert "✗ Invalid data" in result.output
+
+
+def test_edit_command_permission_error(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        runner.invoke(main, ["add", "Test task"])
+
+        task_file = Path("tasks/1.md")
+        edited_content = task_file.read_text().replace("Test task", "Edited task")
+
+        with (
+            patch("click.edit", return_value=edited_content),
+            patch("quadro.storage.TaskStorage.save_task") as mock_save,
+        ):
+            mock_save.side_effect = PermissionError()
+            result = runner.invoke(main, ["edit", "1"])
+
+            assert result.exit_code == 1
+            assert "✗ Permission denied" in result.output
+            assert "read/write permissions" in result.output
+
+
+def test_move_command_permission_error(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        runner.invoke(main, ["add", "Test task"])
+
+        with patch("quadro.storage.TaskStorage.move_task") as mock_move:
+            mock_move.side_effect = PermissionError()
+            result = runner.invoke(main, ["move", "1", "--to", "mvp"])
+
+            assert result.exit_code == 1
+            assert "✗ Permission denied" in result.output
+            assert "read/write permissions" in result.output
+
+
+def test_milestones_command_permission_error(runner: CliRunner) -> None:
+    with (
+        runner.isolated_filesystem(),
+        patch("quadro.storage.TaskStorage.load_all_tasks") as mock_load,
+    ):
+        mock_load.side_effect = PermissionError("tasks")
+        result = runner.invoke(main, ["milestones"])
+
+        assert result.exit_code == 1
+        assert "✗ Permission denied" in result.output
+
+
+def test_unexpected_error_handling(runner: CliRunner) -> None:
+    with (
+        runner.isolated_filesystem(),
+        patch("quadro.storage.TaskStorage.get_next_id") as mock_get_id,
+    ):
+        mock_get_id.side_effect = RuntimeError("Unexpected error occurred")
+        result = runner.invoke(main, ["add", "Test task"])
+
+        assert result.exit_code == 1
+        assert "✗ Unexpected error" in result.output
+        assert "RuntimeError" in result.output
+        assert "Unexpected error occurred" in result.output
+        assert "report this issue" in result.output
