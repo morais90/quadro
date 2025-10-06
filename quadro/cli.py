@@ -7,6 +7,8 @@ from rich.console import Console
 
 from quadro.commands.add import add_task
 from quadro.commands.done import complete_task
+from quadro.commands.edit import get_task_markdown
+from quadro.commands.edit import update_task_from_markdown
 from quadro.commands.list import list_tasks as get_all_tasks
 from quadro.commands.milestones import list_milestones
 from quadro.commands.move import move_task
@@ -15,9 +17,7 @@ from quadro.commands.start import start_task
 from quadro.exceptions import TaskAlreadyDoneError
 from quadro.exceptions import TaskAlreadyInProgressError
 from quadro.exceptions import TaskNotFoundError
-from quadro.models import Task
 from quadro.renderer import Renderer
-from quadro.storage import TaskStorage
 
 
 def handle_exceptions(f: Callable[..., Any]) -> Callable[..., Any]:
@@ -181,15 +181,12 @@ def move(task_id: int, to: str) -> None:
 @handle_exceptions
 def edit(task_id: int) -> None:
     console = Console()
-    storage = TaskStorage()
 
-    task = storage.load_task(task_id)
-
-    if task is None:
-        console.print(f"[red]✗[/red] Task #{task_id} not found")
-        raise SystemExit(1)
-
-    original_content = task.to_markdown()
+    try:
+        original_content = get_task_markdown(task_id)
+    except TaskNotFoundError as e:
+        console.print(f"[red]✗[/red] {e}")
+        raise SystemExit(1) from None
 
     edited_content = click.edit(original_content, extension=".md")
 
@@ -201,6 +198,5 @@ def edit(task_id: int) -> None:
         console.print("[yellow]![/yellow] No changes made")
         return
 
-    updated_task = Task.from_markdown(edited_content, task_id, "edited")
-    storage.save_task(updated_task)
+    update_task_from_markdown(task_id, edited_content)
     console.print(f"[green]✓[/green] Updated task #{task_id}")
