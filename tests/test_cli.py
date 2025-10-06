@@ -253,3 +253,59 @@ def test_milestones_command_with_milestones(runner: CliRunner) -> None:
 
         assert result.exit_code == 0
         assert result.output.strip() == expected.strip()
+
+
+def test_move_command_to_milestone(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        runner.invoke(main, ["add", "Task 1"])
+
+        result = runner.invoke(main, ["move", "1", "--to", "mvp"])
+
+        assert result.exit_code == 0
+        assert "✓ Moved task #1 from root to mvp" in result.output
+        assert "New location: tasks/mvp/1.md" in result.output
+
+        task_file = Path("tasks/mvp/1.md")
+        assert task_file.exists()
+        content = task_file.read_text()
+        assert "milestone: mvp" in content
+
+
+def test_move_command_to_root(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        runner.invoke(main, ["add", "Task 1", "--milestone", "mvp"])
+
+        result = runner.invoke(main, ["move", "1", "--to", "root"])
+
+        assert result.exit_code == 0
+        assert "✓ Moved task #1 from mvp to root" in result.output
+        assert "New location: tasks/1.md" in result.output
+
+        task_file = Path("tasks/1.md")
+        assert task_file.exists()
+        content = task_file.read_text()
+        assert "milestone:" not in content
+
+
+def test_move_command_between_milestones(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        runner.invoke(main, ["add", "Task 1", "--milestone", "mvp"])
+
+        result = runner.invoke(main, ["move", "1", "--to", "v2.0"])
+
+        assert result.exit_code == 0
+        assert "✓ Moved task #1 from mvp to v2.0" in result.output
+        assert "New location: tasks/v2.0/1.md" in result.output
+
+        task_file = Path("tasks/v2.0/1.md")
+        assert task_file.exists()
+        content = task_file.read_text()
+        assert "milestone: v2.0" in content
+
+
+def test_move_command_task_not_found(runner: CliRunner) -> None:
+    with runner.isolated_filesystem():
+        result = runner.invoke(main, ["move", "999", "--to", "mvp"])
+
+        assert result.exit_code == 1
+        assert result.output == "✗ Task #999 not found\n"

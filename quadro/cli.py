@@ -140,3 +140,32 @@ def milestones() -> None:
         return
 
     renderer.render_milestones(tasks)
+
+
+@main.command("move")
+@click.argument("task_id", type=int)
+@click.option("--to", required=True, help="Target milestone name (use 'root' for no milestone)")
+def move(task_id: int, to: str) -> None:
+    console = Console()
+    storage = TaskStorage()
+
+    task = storage.load_task(task_id)
+
+    if task is None:
+        console.print(f"[red]✗[/red] Task #{task_id} not found")
+        raise SystemExit(1)
+
+    old_milestone = task.milestone or "root"
+    to_milestone = None if to == "root" else to
+
+    try:
+        new_path = storage.move_task(task_id, to_milestone)
+        new_milestone = to_milestone or "root"
+
+        console.print(
+            f"[green]✓[/green] Moved task #{task_id} from {old_milestone} to {new_milestone}"
+        )
+        console.print(f"[dim]New location: {new_path}[/dim]")
+    except ValueError as e:
+        console.print(f"[red]✗[/red] {e}")
+        raise SystemExit(1) from e
