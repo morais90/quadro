@@ -9,6 +9,10 @@ from rich.console import Console
 
 from quadro.commands.add import add_task
 from quadro.commands.list import list_tasks as get_all_tasks
+from quadro.commands.start import start_task
+from quadro.exceptions import TaskAlreadyDoneError
+from quadro.exceptions import TaskAlreadyInProgressError
+from quadro.exceptions import TaskNotFoundError
 from quadro.models import Task
 from quadro.models import TaskStatus
 from quadro.renderer import Renderer
@@ -92,26 +96,15 @@ def list_tasks(milestone: str | None) -> None:
 @handle_exceptions
 def start(task_id: int) -> None:
     console = Console()
-    storage = TaskStorage()
 
-    task = storage.load_task(task_id)
-
-    if task is None:
-        console.print(f"[red]✗[/red] Task #{task_id} not found")
-        raise SystemExit(1)
-
-    if task.status == TaskStatus.PROGRESS:
-        console.print(f"[yellow]![/yellow] Task #{task_id} is already in progress")
-        return
-
-    if task.status == TaskStatus.DONE:
-        console.print(f"[yellow]![/yellow] Task #{task_id} is already done")
-        return
-
-    task.status = TaskStatus.PROGRESS
-    storage.save_task(task)
-
-    console.print(f"[green]✓[/green] Started task #{task_id}: {task.title}")
+    try:
+        task = start_task(task_id)
+        console.print(f"[green]✓[/green] Started task #{task_id}: {task.title}")
+    except TaskNotFoundError as e:
+        console.print(f"[red]✗[/red] {e}")
+        raise SystemExit(1) from None
+    except (TaskAlreadyInProgressError, TaskAlreadyDoneError) as e:
+        console.print(f"[yellow]![/yellow] {e}")
 
 
 @main.command("done")
