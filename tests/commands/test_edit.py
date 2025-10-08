@@ -1,4 +1,5 @@
 from pathlib import Path
+from textwrap import dedent
 from unittest.mock import patch
 
 import pytest
@@ -61,9 +62,11 @@ class TestUpdateTaskFromMarkdown:
         with runner.isolated_filesystem():
             add_task("Test task")
 
-            invalid_content = "---\nstatus: invalid\n---\nNo title"
+            invalid_content = (
+                "---\nstatus: invalid\ncreated: 2025-10-03T09:30:15+00:00\n---\nNo title"
+            )
 
-            with pytest.raises(ValueError, match="Invalid status"):
+            with pytest.raises(ValueError, match="'invalid' is not a valid TaskStatus"):
                 update_task_from_markdown(1, invalid_content)
 
 
@@ -143,5 +146,8 @@ class TestEditCommandCLI:
                 result = runner.invoke(main, ["edit", "1"])
 
                 assert result.exit_code == 1
-                assert "✗ Permission denied" in result.output
-                assert "read/write permissions" in result.output
+                assert result.output == dedent("""\
+                    ✗ Permission denied
+                    Cannot access: tasks directory
+                    Check that you have read/write permissions for the tasks directory.
+                    """)

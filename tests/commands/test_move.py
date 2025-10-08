@@ -1,4 +1,5 @@
 from pathlib import Path
+from textwrap import dedent
 from unittest.mock import patch
 
 import pytest
@@ -110,5 +111,8 @@ class TestMoveCommandCLI:
                 result = runner.invoke(main, ["move", "1", "--to", "mvp"])
 
                 assert result.exit_code == 1
-                assert "✗ Permission denied" in result.output
-                assert "read/write permissions" in result.output
+                assert result.output == dedent("""\
+                    ✗ Permission denied
+                    Cannot access: tasks directory
+                    Check that you have read/write permissions for the tasks directory.
+                    """)

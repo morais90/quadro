@@ -1,4 +1,5 @@
 from pathlib import Path
+from textwrap import dedent
 from unittest.mock import patch
 
 import pytest
@@ -94,8 +95,11 @@ class TestAddCommandCLI:
             result = runner.invoke(main, ["add", "Test task"])
 
             assert result.exit_code == 1
-            assert "✗ Permission denied" in result.output
-            assert "read/write permissions" in result.output
+            assert result.output == dedent("""\
+                ✗ Permission denied
+                Cannot access: tasks directory
+                Check that you have read/write permissions for the tasks directory.
+                """)
 
     def test_add_command_os_error(self, runner: CliRunner) -> None:
         with (
@@ -106,6 +110,8 @@ class TestAddCommandCLI:
             result = runner.invoke(main, ["add", "Test task"])
 
             assert result.exit_code == 1
-            assert "✗ System error" in result.output
-            assert "No space left on device" in result.output
-            assert "disk space" in result.output
+            assert result.output == dedent("""\
+                ✗ System error
+                No space left on device
+                Check disk space and file permissions.
+                """)

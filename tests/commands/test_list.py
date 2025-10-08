@@ -132,9 +132,14 @@ class TestListCommandCLI:
             runner.isolated_filesystem(),
             patch("quadro.storage.TaskStorage.load_all_tasks") as mock_load,
         ):
-            mock_load.side_effect = PermissionError("tasks")
+            perm_error = PermissionError("tasks")
+            perm_error.filename = "tasks"
+            mock_load.side_effect = perm_error
             result = runner.invoke(main, ["list"])
 
             assert result.exit_code == 1
-            assert "✗ Permission denied" in result.output
-            assert "Cannot access: tasks" in result.output
+            assert result.output == dedent("""\
+                ✗ Permission denied
+                Cannot access: tasks
+                Check that you have read/write permissions for the tasks directory.
+                """)
