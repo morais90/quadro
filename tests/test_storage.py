@@ -431,3 +431,61 @@ def test_get_milestones_ignores_files_in_root(tmp_path: Path) -> None:
     milestones = storage.get_milestones()
 
     assert milestones == ["mvp"]
+
+
+def test_delete_task_existing(tmp_path: Path) -> None:
+    storage = TaskStorage(base_path=tmp_path)
+    task = Task(
+        id=1,
+        title="Task to Delete",
+        description="This will be deleted",
+        status=TaskStatus.TODO,
+        milestone=None,
+        created=datetime(2025, 10, 3, 9, 0, 0, tzinfo=UTC),
+    )
+
+    file_path = storage.save_task(task)
+    assert file_path.exists()
+
+    deleted_path = storage.delete_task(1)
+
+    assert deleted_path == tmp_path / "1.md"
+    assert not file_path.exists()
+    assert storage.load_task(1) is None
+
+
+def test_delete_task_from_milestone(tmp_path: Path) -> None:
+    storage = TaskStorage(base_path=tmp_path)
+    task = Task(
+        id=5,
+        title="Milestone Task to Delete",
+        description="This will be deleted",
+        status=TaskStatus.PROGRESS,
+        milestone="mvp",
+        created=datetime(2025, 10, 3, 10, 0, 0, tzinfo=UTC),
+    )
+
+    file_path = storage.save_task(task)
+    assert file_path.exists()
+
+    deleted_path = storage.delete_task(5)
+
+    assert deleted_path == tmp_path / "mvp" / "5.md"
+    assert not file_path.exists()
+    assert storage.load_task(5) is None
+
+
+def test_delete_task_not_found(tmp_path: Path) -> None:
+    storage = TaskStorage(base_path=tmp_path)
+
+    deleted_path = storage.delete_task(999)
+
+    assert deleted_path is None
+
+
+def test_delete_task_nonexistent_directory(tmp_path: Path) -> None:
+    storage = TaskStorage(base_path=tmp_path / "nonexistent")
+
+    deleted_path = storage.delete_task(1)
+
+    assert deleted_path is None

@@ -94,6 +94,41 @@ class TaskStorage:
 
         return new_file_path
 
+    def delete_task(self, task_id: int) -> Path | None:
+        """
+        Delete a task file by its ID.
+
+        Parameters
+        ----------
+        task_id : int
+            The unique identifier of the task to delete.
+
+        Returns
+        -------
+        Path | None
+            The path of the deleted task file if found and deleted,
+            None if the task was not found or base directory doesn't exist.
+
+        Examples
+        --------
+        >>> storage = TaskStorage()
+        >>> deleted_path = storage.delete_task(1)
+        >>> if deleted_path:
+        ...     print(f"Deleted: {deleted_path}")
+        """
+        if not self.base_path.exists():
+            return None
+
+        pattern = re.compile(r"^(\d+)\.md$")
+
+        for file_path in self.base_path.rglob("*.md"):
+            match = pattern.match(file_path.name)
+            if match and int(match.group(1)) == task_id:
+                file_path.unlink()
+                return file_path
+
+        return None
+
     def get_milestones(self) -> list[str]:
         if not self.base_path.exists():
             return []
