@@ -6,6 +6,7 @@ import click
 from rich.console import Console
 
 from quadro.commands.add import add_task
+from quadro.commands.delete import delete_task
 from quadro.commands.done import complete_task
 from quadro.commands.edit import get_task_markdown
 from quadro.commands.edit import update_task_from_markdown
@@ -200,3 +201,36 @@ def edit(task_id: int) -> None:
 
     update_task_from_markdown(task_id, edited_content)
     console.print(f"[green]✓[/green] Updated task #{task_id}")
+
+
+@main.command("delete")
+@click.argument("task_id", type=int)
+@click.option("--yes", "-y", is_flag=True, help="Skip confirmation prompt")
+@handle_exceptions
+def delete(task_id: int, yes: bool) -> None:  # noqa: FBT001
+    console = Console()
+    renderer = Renderer(console)
+
+    try:
+        task = show_task(task_id)
+    except TaskNotFoundError as e:
+        console.print(f"[red]✗[/red] {e}")
+        raise SystemExit(1) from None
+
+    if not yes:
+        console.print("[yellow]Task to be deleted:[/yellow]\n")
+        renderer.render_task_detail(task)
+        console.print()
+
+        if not click.confirm("Are you sure you want to delete this task?", default=False):
+            console.print("[yellow]![/yellow] Deletion cancelled")
+            return
+
+    try:
+        _, file_path = delete_task(task_id)
+    except TaskNotFoundError as e:
+        console.print(f"[red]✗[/red] {e}")
+        raise SystemExit(1) from None
+
+    console.print(f"[green]✓[/green] Deleted task #{task_id}: {task.title}")
+    console.print(f"[dim]Removed: {file_path}[/dim]")
