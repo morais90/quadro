@@ -60,6 +60,10 @@ def handle_exceptions(f: Callable[..., Any]) -> Callable[..., Any]:
 @click.group(invoke_without_command=True)
 @click.pass_context
 def main(ctx: click.Context) -> None:
+    """Quadro task management CLI.
+
+    When invoked without a subcommand, defaults to listing all tasks.
+    """
     if ctx.invoked_subcommand is None:
         ctx.invoke(list_tasks)
 
@@ -69,6 +73,16 @@ def main(ctx: click.Context) -> None:
 @click.option("--milestone", default=None, help="Milestone name for the task")
 @handle_exceptions
 def add(title: str, milestone: str | None) -> None:
+    """Create a new task with the specified title.
+
+    Creates a new task in TODO status and saves it as a markdown file.
+    Tasks can optionally be assigned to a milestone for organization.
+
+    \b
+    Examples:
+      $ quadro add "Implement login feature"
+      $ quadro add "Add user authentication" --milestone mvp
+    """
     console = Console()
 
     task_id, file_path = add_task(title, milestone)
@@ -81,6 +95,19 @@ def add(title: str, milestone: str | None) -> None:
 @click.option("--milestone", default=None, help="Filter tasks by milestone")
 @handle_exceptions
 def list_tasks(milestone: str | None) -> None:
+    """List all tasks with their status and details.
+
+    Displays a formatted table of tasks showing ID, status, title, and
+    milestone. Tasks are grouped by status (TODO, PROGRESS, DONE) and can
+    be filtered by milestone.
+
+    This is the default command when running 'quadro' without arguments.
+
+    \b
+    Examples:
+      $ quadro list
+      $ quadro list --milestone mvp
+    """
     console = Console()
     renderer = Renderer(console)
 
@@ -97,6 +124,18 @@ def list_tasks(milestone: str | None) -> None:
 @click.argument("task_id", type=int)
 @handle_exceptions
 def start(task_id: int) -> None:
+    """Mark a task as in progress.
+
+    Changes the status of a task from TODO to PROGRESS, indicating that
+    work has begun on the task.
+
+    If the task is already in progress or completed, a warning is displayed
+    but the command exits successfully.
+
+    \b
+    Example:
+      $ quadro start 1
+    """
     console = Console()
 
     try:
@@ -113,6 +152,18 @@ def start(task_id: int) -> None:
 @click.argument("task_id", type=int)
 @handle_exceptions
 def done(task_id: int) -> None:
+    """Mark a task as completed.
+
+    Changes the status of a task to DONE and records the completion timestamp.
+    This indicates that work on the task has been successfully finished.
+
+    If the task is already completed, a warning is displayed but the command
+    exits successfully.
+
+    \b
+    Example:
+      $ quadro done 1
+    """
     console = Console()
 
     try:
@@ -129,6 +180,17 @@ def done(task_id: int) -> None:
 @click.argument("task_id", type=int)
 @handle_exceptions
 def show(task_id: int) -> None:
+    """Display detailed information about a specific task.
+
+    Shows the complete details of a task including its ID, title, status,
+    description, milestone, creation date, and completion date (if applicable).
+
+    The task details are rendered in a formatted, color-coded display.
+
+    \b
+    Example:
+      $ quadro show 1
+    """
     console = Console()
     renderer = Renderer(console)
 
@@ -143,6 +205,19 @@ def show(task_id: int) -> None:
 @main.command("milestones")
 @handle_exceptions
 def milestones() -> None:
+    """Display a summary of all milestones and their tasks.
+
+    Shows a grouped view of tasks organized by milestone, with counts of
+    tasks in each status (TODO, PROGRESS, DONE) per milestone. Useful for
+    tracking progress across different project phases or releases.
+
+    Only tasks that have been assigned to a milestone are included in this
+    view. Tasks without a milestone are not shown.
+
+    \b
+    Example:
+      $ quadro milestones
+    """
     console = Console()
     renderer = Renderer(console)
 
@@ -164,6 +239,21 @@ def milestones() -> None:
 @click.option("--to", required=True, help="Target milestone name (use 'root' for no milestone)")
 @handle_exceptions
 def move(task_id: int, to: str) -> None:
+    """Move a task to a different milestone.
+
+    Relocates a task's file from one milestone directory to another, or
+    between the root directory and a milestone. The task's milestone field
+    is updated accordingly.
+
+    Use 'root' as the target to move a task out of any milestone to the
+    root directory.
+
+    \b
+    Examples:
+      $ quadro move 1 --to mvp
+      $ quadro move 5 --to root
+      $ quadro move 3 --to v2.0
+    """
     console = Console()
 
     try:
@@ -181,6 +271,24 @@ def move(task_id: int, to: str) -> None:
 @click.argument("task_id", type=int)
 @handle_exceptions
 def edit(task_id: int) -> None:
+    """Edit a task's details in your default text editor.
+
+    Opens the task's markdown file in the system's default editor (determined
+    by the EDITOR environment variable). You can modify the title, description,
+    status, and milestone. Changes are validated and saved upon editor exit.
+
+    The task file is opened in markdown format with frontmatter containing
+    metadata (status, milestone, created date) and the task body containing
+    the title and description. If you exit the editor without saving or if
+    no changes are made, the task remains unmodified.
+
+    Invalid modifications (e.g., invalid status values) will be rejected with
+    an error message.
+
+    \b
+    Example:
+      $ quadro edit 1
+    """
     console = Console()
 
     try:
@@ -208,6 +316,25 @@ def edit(task_id: int) -> None:
 @click.option("--yes", "-y", is_flag=True, help="Skip confirmation prompt")
 @handle_exceptions
 def delete(task_id: int, yes: bool) -> None:  # noqa: FBT001
+    """Delete a task permanently.
+
+    Removes a task and its associated file from the filesystem. By default,
+    displays the task details and prompts for confirmation before deletion
+    to prevent accidental data loss.
+
+    WARNING: This operation is irreversible. Once deleted, the task file is
+    permanently removed from the filesystem and cannot be recovered.
+
+    The confirmation prompt shows the full task details before deletion,
+    allowing you to verify you're deleting the correct task. The confirmation
+    defaults to 'No' for safety.
+
+    \b
+    Examples:
+      $ quadro delete 1
+      $ quadro delete 1 --yes
+      $ quadro delete 1 -y
+    """
     console = Console()
     renderer = Renderer(console)
 
