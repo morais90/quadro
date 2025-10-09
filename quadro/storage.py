@@ -2,6 +2,7 @@ import re
 from pathlib import Path
 
 from quadro.models import Task
+from quadro.models import TaskStatus
 
 
 class TaskStorage:
@@ -136,3 +137,34 @@ class TaskStorage:
         milestones = [item.name for item in self.base_path.iterdir() if item.is_dir()]
 
         return sorted(milestones)
+
+    def filter_by_status(self, tasks: list[Task], statuses: list[TaskStatus]) -> list[Task]:
+        """
+        Filter tasks by status.
+
+        Parameters
+        ----------
+        tasks : list[Task]
+            The list of tasks to filter.
+        statuses : list[TaskStatus]
+            The list of statuses to filter by. Tasks matching any status in
+            this list will be included. If empty, all tasks are returned.
+
+        Returns
+        -------
+        list[Task]
+            The filtered list of tasks.
+
+        Examples
+        --------
+        >>> storage = TaskStorage()
+        >>> tasks = storage.load_all_tasks()
+        >>> todo_tasks = storage.filter_by_status(tasks, [TaskStatus.TODO])
+        >>> done_and_progress = storage.filter_by_status(
+        ...     tasks, [TaskStatus.DONE, TaskStatus.PROGRESS]
+        ... )
+        """
+        if not statuses:
+            return tasks
+
+        return [task for task in tasks if task.status in statuses]

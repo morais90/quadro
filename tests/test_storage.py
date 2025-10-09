@@ -489,3 +489,183 @@ def test_delete_task_nonexistent_directory(tmp_path: Path) -> None:
     deleted_path = storage.delete_task(1)
 
     assert deleted_path is None
+
+
+def test_filter_by_status_single_status(tmp_path: Path) -> None:
+    storage = TaskStorage(base_path=tmp_path)
+
+    task1 = Task(
+        id=1,
+        title="Todo Task",
+        description="First todo task",
+        status=TaskStatus.TODO,
+        milestone=None,
+        created=datetime(2025, 10, 3, 9, 0, 0, tzinfo=UTC),
+    )
+
+    task2 = Task(
+        id=2,
+        title="Progress Task",
+        description="Task in progress",
+        status=TaskStatus.PROGRESS,
+        milestone=None,
+        created=datetime(2025, 10, 3, 10, 0, 0, tzinfo=UTC),
+    )
+
+    task3 = Task(
+        id=3,
+        title="Done Task",
+        description="Completed task",
+        status=TaskStatus.DONE,
+        milestone=None,
+        created=datetime(2025, 10, 3, 11, 0, 0, tzinfo=UTC),
+        completed=datetime(2025, 10, 3, 12, 0, 0, tzinfo=UTC),
+    )
+
+    storage.save_task(task1)
+    storage.save_task(task2)
+    storage.save_task(task3)
+
+    all_tasks = storage.load_all_tasks()
+
+    todo_tasks = storage.filter_by_status(all_tasks, [TaskStatus.TODO])
+    assert len(todo_tasks) == 1
+    assert todo_tasks[0].id == 1
+    assert todo_tasks[0].status == TaskStatus.TODO
+
+
+def test_filter_by_status_multiple_statuses(tmp_path: Path) -> None:
+    storage = TaskStorage(base_path=tmp_path)
+
+    task1 = Task(
+        id=1,
+        title="Todo Task",
+        description="First todo task",
+        status=TaskStatus.TODO,
+        milestone=None,
+        created=datetime(2025, 10, 3, 9, 0, 0, tzinfo=UTC),
+    )
+
+    task2 = Task(
+        id=2,
+        title="Progress Task",
+        description="Task in progress",
+        status=TaskStatus.PROGRESS,
+        milestone=None,
+        created=datetime(2025, 10, 3, 10, 0, 0, tzinfo=UTC),
+    )
+
+    task3 = Task(
+        id=3,
+        title="Done Task",
+        description="Completed task",
+        status=TaskStatus.DONE,
+        milestone=None,
+        created=datetime(2025, 10, 3, 11, 0, 0, tzinfo=UTC),
+        completed=datetime(2025, 10, 3, 12, 0, 0, tzinfo=UTC),
+    )
+
+    task4 = Task(
+        id=4,
+        title="Another Todo Task",
+        description="Second todo task",
+        status=TaskStatus.TODO,
+        milestone=None,
+        created=datetime(2025, 10, 3, 13, 0, 0, tzinfo=UTC),
+    )
+
+    storage.save_task(task1)
+    storage.save_task(task2)
+    storage.save_task(task3)
+    storage.save_task(task4)
+
+    all_tasks = storage.load_all_tasks()
+
+    done_and_progress = storage.filter_by_status(all_tasks, [TaskStatus.DONE, TaskStatus.PROGRESS])
+    assert len(done_and_progress) == 2
+    assert {task.id for task in done_and_progress} == {2, 3}
+    assert {task.status for task in done_and_progress} == {
+        TaskStatus.DONE,
+        TaskStatus.PROGRESS,
+    }
+
+
+def test_filter_by_status_empty_list_returns_all(tmp_path: Path) -> None:
+    storage = TaskStorage(base_path=tmp_path)
+
+    task1 = Task(
+        id=1,
+        title="Todo Task",
+        description="First todo task",
+        status=TaskStatus.TODO,
+        milestone=None,
+        created=datetime(2025, 10, 3, 9, 0, 0, tzinfo=UTC),
+    )
+
+    task2 = Task(
+        id=2,
+        title="Progress Task",
+        description="Task in progress",
+        status=TaskStatus.PROGRESS,
+        milestone=None,
+        created=datetime(2025, 10, 3, 10, 0, 0, tzinfo=UTC),
+    )
+
+    task3 = Task(
+        id=3,
+        title="Done Task",
+        description="Completed task",
+        status=TaskStatus.DONE,
+        milestone=None,
+        created=datetime(2025, 10, 3, 11, 0, 0, tzinfo=UTC),
+        completed=datetime(2025, 10, 3, 12, 0, 0, tzinfo=UTC),
+    )
+
+    storage.save_task(task1)
+    storage.save_task(task2)
+    storage.save_task(task3)
+
+    all_tasks = storage.load_all_tasks()
+
+    filtered_tasks = storage.filter_by_status(all_tasks, [])
+    assert len(filtered_tasks) == 3
+    assert filtered_tasks == all_tasks
+
+
+def test_filter_by_status_no_matching_tasks(tmp_path: Path) -> None:
+    storage = TaskStorage(base_path=tmp_path)
+
+    task1 = Task(
+        id=1,
+        title="Todo Task",
+        description="First todo task",
+        status=TaskStatus.TODO,
+        milestone=None,
+        created=datetime(2025, 10, 3, 9, 0, 0, tzinfo=UTC),
+    )
+
+    task2 = Task(
+        id=2,
+        title="Another Todo Task",
+        description="Second todo task",
+        status=TaskStatus.TODO,
+        milestone=None,
+        created=datetime(2025, 10, 3, 10, 0, 0, tzinfo=UTC),
+    )
+
+    storage.save_task(task1)
+    storage.save_task(task2)
+
+    all_tasks = storage.load_all_tasks()
+
+    done_tasks = storage.filter_by_status(all_tasks, [TaskStatus.DONE])
+    assert len(done_tasks) == 0
+    assert done_tasks == []
+
+
+def test_filter_by_status_with_empty_task_list(tmp_path: Path) -> None:
+    storage = TaskStorage(base_path=tmp_path)
+
+    filtered_tasks = storage.filter_by_status([], [TaskStatus.TODO])
+    assert len(filtered_tasks) == 0
+    assert filtered_tasks == []
