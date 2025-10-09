@@ -18,6 +18,7 @@ from quadro.commands.start import start_task
 from quadro.exceptions import TaskAlreadyDoneError
 from quadro.exceptions import TaskAlreadyInProgressError
 from quadro.exceptions import TaskNotFoundError
+from quadro.models import TaskStatus
 from quadro.renderer import Renderer
 
 
@@ -93,13 +94,23 @@ def add(title: str, milestone: str | None) -> None:
 
 @main.command("list")
 @click.option("--milestone", default=None, help="Filter tasks by milestone")
+@click.option("--todo", is_flag=True, help="Show only TODO tasks")
+@click.option("--progress", is_flag=True, help="Show only tasks in PROGRESS")
+@click.option("--done", is_flag=True, help="Show only DONE tasks")
 @handle_exceptions
-def list_tasks(milestone: str | None) -> None:
+def list_tasks(
+    milestone: str | None,
+    todo: bool,  # noqa: FBT001
+    progress: bool,  # noqa: FBT001
+    done: bool,  # noqa: FBT001
+) -> None:
     """List all tasks with their status and details.
 
     Displays a formatted table of tasks showing ID, status, title, and
-    milestone. Tasks are grouped by status (TODO, PROGRESS, DONE) and can
-    be filtered by milestone.
+    milestone. Tasks can be filtered by milestone and status.
+
+    Status filters can be combined to show multiple statuses. If no status
+    filters are provided, all tasks are shown.
 
     This is the default command when running 'quadro' without arguments.
 
@@ -107,17 +118,28 @@ def list_tasks(milestone: str | None) -> None:
     Examples:
       $ quadro list
       $ quadro list --milestone mvp
+      $ quadro list --todo
+      $ quadro list --todo --progress
+      $ quadro list --done --milestone mvp
     """
     console = Console()
     renderer = Renderer(console)
 
-    tasks = get_all_tasks()
+    status_filters = []
+    if todo:
+        status_filters.append(TaskStatus.TODO)
+    if progress:
+        status_filters.append(TaskStatus.PROGRESS)
+    if done:
+        status_filters.append(TaskStatus.DONE)
+
+    tasks = get_all_tasks(milestone=milestone, statuses=status_filters or None)
 
     if not tasks:
         console.print("[yellow]No tasks found. Create one with 'quadro add <title>'[/yellow]")
         return
 
-    renderer.render_task_list(tasks, milestone_filter=milestone)
+    renderer.render_task_list(tasks)
 
 
 @main.command("start")

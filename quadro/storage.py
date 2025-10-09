@@ -51,14 +51,22 @@ class TaskStorage:
 
         return None
 
-    def load_all_tasks(self) -> list[Task]:
+    def load_all_tasks(self, milestone: str | None = None) -> list[Task]:
         if not self.base_path.exists():
             return []
 
         tasks = []
         pattern = re.compile(r"^(\d+)\.md$")
 
-        for file_path in self.base_path.rglob("*.md"):
+        if milestone is not None:
+            search_path = self.base_path / milestone
+            if not search_path.exists():
+                return []
+            file_paths = search_path.glob("*.md")
+        else:
+            file_paths = self.base_path.rglob("*.md")
+
+        for file_path in file_paths:
             match = pattern.match(file_path.name)
             if match:
                 task_id = int(match.group(1))

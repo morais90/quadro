@@ -269,6 +269,77 @@ def test_load_all_tasks_ignores_non_numeric_files(tmp_path: Path) -> None:
     assert tasks[0].id == 1
 
 
+def test_load_all_tasks_with_milestone_filter(tmp_path: Path) -> None:
+    storage = TaskStorage(base_path=tmp_path)
+
+    task1 = Task(
+        id=1,
+        title="Root Task",
+        description="Task in root",
+        status=TaskStatus.TODO,
+        milestone=None,
+        created=datetime(2025, 10, 3, 9, 0, 0, tzinfo=UTC),
+    )
+
+    task2 = Task(
+        id=2,
+        title="MVP Task 1",
+        description="First MVP task",
+        status=TaskStatus.PROGRESS,
+        milestone="mvp",
+        created=datetime(2025, 10, 3, 10, 0, 0, tzinfo=UTC),
+    )
+
+    task3 = Task(
+        id=3,
+        title="MVP Task 2",
+        description="Second MVP task",
+        status=TaskStatus.DONE,
+        milestone="mvp",
+        created=datetime(2025, 10, 3, 11, 0, 0, tzinfo=UTC),
+        completed=datetime(2025, 10, 3, 12, 0, 0, tzinfo=UTC),
+    )
+
+    task4 = Task(
+        id=4,
+        title="V2 Task",
+        description="Task in v2",
+        status=TaskStatus.TODO,
+        milestone="v2",
+        created=datetime(2025, 10, 3, 13, 0, 0, tzinfo=UTC),
+    )
+
+    storage.save_task(task1)
+    storage.save_task(task2)
+    storage.save_task(task3)
+    storage.save_task(task4)
+
+    mvp_tasks = storage.load_all_tasks(milestone="mvp")
+
+    assert len(mvp_tasks) == 2
+    assert {task.id for task in mvp_tasks} == {2, 3}
+    assert all(task.milestone == "mvp" for task in mvp_tasks)
+
+
+def test_load_all_tasks_with_nonexistent_milestone(tmp_path: Path) -> None:
+    storage = TaskStorage(base_path=tmp_path)
+
+    task = Task(
+        id=1,
+        title="Task 1",
+        description="A task",
+        status=TaskStatus.TODO,
+        milestone="mvp",
+        created=datetime(2025, 10, 3, 9, 0, 0, tzinfo=UTC),
+    )
+
+    storage.save_task(task)
+
+    tasks = storage.load_all_tasks(milestone="nonexistent")
+
+    assert tasks == []
+
+
 def test_move_task_from_root_to_milestone(tmp_path: Path) -> None:
     storage = TaskStorage(base_path=tmp_path)
     task = Task(
