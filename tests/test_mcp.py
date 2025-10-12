@@ -279,3 +279,143 @@ class TestCreateTaskMCPTool:
                 expected = to_compact_json(build_task_json(2, "New Task"))
 
                 assert result.content[0].text == expected
+
+
+class TestStartTaskMCPTool:
+    @pytest.mark.asyncio
+    @freeze_time(FROZEN_TIME)
+    async def test_start_task_changes_status_to_progress(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            task = add_task("Test Task", milestone="mvp")
+
+            async with Client(mcp) as client:
+                result = await client.call_tool("start_task", {"task_id": task.id})
+
+                expected = to_compact_json(
+                    build_task_json(task.id, "Test Task", status="progress", milestone="mvp")
+                )
+
+                assert result.content[0].text == expected
+
+    @pytest.mark.asyncio
+    async def test_start_task_raises_error_for_nonexistent_task(
+        self,
+        runner: CliRunner,
+    ) -> None:
+        with runner.isolated_filesystem():
+            async with Client(mcp) as client:
+                with pytest.raises(Exception, match="Task #999 not found"):
+                    await client.call_tool("start_task", {"task_id": 999})
+
+    @pytest.mark.asyncio
+    @freeze_time(FROZEN_TIME)
+    async def test_start_task_raises_error_for_already_in_progress_task(
+        self,
+        runner: CliRunner,
+    ) -> None:
+        with runner.isolated_filesystem():
+            task = add_task("Test Task")
+            storage = TaskStorage()
+            task_loaded = storage.load_task(task.id)
+            assert task_loaded is not None
+
+            task_loaded.status = TaskStatus.PROGRESS
+            storage.save_task(task_loaded)
+
+            async with Client(mcp) as client:
+                with pytest.raises(Exception, match="is already in progress"):
+                    await client.call_tool("start_task", {"task_id": task.id})
+
+    @pytest.mark.asyncio
+    @freeze_time(FROZEN_TIME)
+    async def test_start_task_raises_error_for_already_done_task(
+        self,
+        runner: CliRunner,
+    ) -> None:
+        with runner.isolated_filesystem():
+            task = add_task("Test Task")
+            storage = TaskStorage()
+            task_loaded = storage.load_task(task.id)
+            assert task_loaded is not None
+
+            task_loaded.status = TaskStatus.DONE
+            task_loaded.completed = datetime.now(UTC)
+            storage.save_task(task_loaded)
+
+            async with Client(mcp) as client:
+                with pytest.raises(Exception, match="is already done"):
+                    await client.call_tool("start_task", {"task_id": task.id})
+
+
+class TestCompleteTaskMCPTool:
+    @pytest.mark.asyncio
+    @freeze_time(FROZEN_TIME)
+    async def test_complete_task_changes_status_to_done(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            task = add_task("Test Task", milestone="mvp")
+
+            async with Client(mcp) as client:
+                result = await client.call_tool("complete_task", {"task_id": task.id})
+
+                expected = to_compact_json(
+                    build_task_json(
+                        task.id,
+                        "Test Task",
+                        status="done",
+                        milestone="mvp",
+                        completed=FROZEN_TIME_ISO,
+                    )
+                )
+
+                assert result.content[0].text == expected
+
+    @pytest.mark.asyncio
+    @freeze_time(FROZEN_TIME)
+    async def test_complete_task_from_progress_status(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            task = add_task("Test Task")
+            storage = TaskStorage()
+            task_loaded = storage.load_task(task.id)
+            assert task_loaded is not None
+
+            task_loaded.status = TaskStatus.PROGRESS
+            storage.save_task(task_loaded)
+
+            async with Client(mcp) as client:
+                result = await client.call_tool("complete_task", {"task_id": task.id})
+
+                expected = to_compact_json(
+                    build_task_json(task.id, "Test Task", status="done", completed=FROZEN_TIME_ISO)
+                )
+
+                assert result.content[0].text == expected
+
+    @pytest.mark.asyncio
+    async def test_complete_task_raises_error_for_nonexistent_task(
+        self,
+        runner: CliRunner,
+    ) -> None:
+        with runner.isolated_filesystem():
+            async with Client(mcp) as client:
+                with pytest.raises(Exception, match="Task #999 not found"):
+                    await client.call_tool("complete_task", {"task_id": 999})
+
+    @pytest.mark.asyncio
+    @freeze_time(FROZEN_TIME)
+    async def test_complete_task_raises_error_for_already_done_task(
+        self,
+        runner: CliRunner,
+    ) -> None:
+        with runner.isolated_filesystem():
+            task = add_task("Test Task")
+            storage = TaskStorage()
+            task_loaded = storage.load_task(task.id)
+            assert task_loaded is not None
+
+            task_loaded.status = TaskStatus.DONE
+            task_loaded.completed = datetime.now(UTC)
+            storage.save_task(task_loaded)
+
+            async with Client(mcp) as client:
+                with pytest.raises(Exception, match="is already done"):
+                    await client.call_tool("complete_task", {"task_id": task.id})

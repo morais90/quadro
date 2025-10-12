@@ -3,9 +3,7 @@ from typing import Annotated
 from fastmcp import FastMCP
 from pydantic import Field
 
-from quadro.command import add_task
-from quadro.command import list_tasks as get_tasks
-from quadro.command import show_task
+from quadro import command
 from quadro.models import Task
 from quadro.models import TaskStatus
 
@@ -57,7 +55,7 @@ def list_tasks(
         List of Task objects.
     """
     statuses = [status] if status is not None else None
-    return get_tasks(milestone=milestone, statuses=statuses)
+    return command.list_tasks(milestone=milestone, statuses=statuses)
 
 
 @mcp.tool(description="Get a specific task by ID")
@@ -82,7 +80,7 @@ def get_task(
     TaskNotFoundError
         If task with the specified ID does not exist.
     """
-    return show_task(task_id)
+    return command.show_task(task_id)
 
 
 @mcp.tool(description="Create a new task with title, description, and optional milestone")
@@ -111,7 +109,63 @@ def create_task(
     Task
         The newly created Task object.
     """
-    return add_task(title=title, description=description, milestone=milestone)
+    return command.add_task(title=title, description=description, milestone=milestone)
+
+
+@mcp.tool(description="Start a task by changing its status to in progress")
+def start_task(
+    task_id: Annotated[int, Field(description="The ID of the task to start")],
+) -> Task:
+    """
+    Start a task by changing its status to in progress.
+
+    Parameters
+    ----------
+    task_id : int
+        The ID of the task to start.
+
+    Returns
+    -------
+    Task
+        The updated task with PROGRESS status.
+
+    Raises
+    ------
+    TaskNotFoundError
+        If task with the specified ID does not exist.
+    TaskAlreadyInProgressError
+        If task is already in progress.
+    TaskAlreadyDoneError
+        If task is already completed.
+    """
+    return command.start_task(task_id)
+
+
+@mcp.tool(description="Mark a task as completed")
+def complete_task(
+    task_id: Annotated[int, Field(description="The ID of the task to complete")],
+) -> Task:
+    """
+    Mark a task as completed.
+
+    Parameters
+    ----------
+    task_id : int
+        The ID of the task to complete.
+
+    Returns
+    -------
+    Task
+        The updated task with DONE status and completion timestamp.
+
+    Raises
+    ------
+    TaskNotFoundError
+        If task with the specified ID does not exist.
+    TaskAlreadyDoneError
+        If task is already completed.
+    """
+    return command.complete_task(task_id)
 
 
 if __name__ == "__main__":
