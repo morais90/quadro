@@ -17,9 +17,3 @@ dist/
 
 # Virtual environment
 .venv/
-
-# Application data
-tasks/
-
-# Project planning
-roadmap.md
