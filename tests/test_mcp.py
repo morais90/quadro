@@ -482,3 +482,35 @@ class TestMoveTaskMCPTool:
             async with Client(mcp) as client:
                 with pytest.raises(Exception, match="Task #999 not found"):
                     await client.call_tool("move_task", {"task_id": 999, "to_milestone": "mvp"})
+
+
+class TestDeleteTaskMCPTool:
+    @pytest.mark.asyncio
+    @freeze_time(FROZEN_TIME)
+    async def test_delete_task_returns_deleted_task(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            task = add_task("Test Task", description="Test description", milestone="mvp")
+
+            async with Client(mcp) as client:
+                result = await client.call_tool("delete_task", {"task_id": task.id})
+
+                expected = to_compact_json(
+                    build_task_json(
+                        task.id,
+                        "Test Task",
+                        description="Test description",
+                        milestone="mvp",
+                    )
+                )
+
+                assert result.content[0].text == expected
+
+    @pytest.mark.asyncio
+    async def test_delete_task_raises_error_for_nonexistent_task(
+        self,
+        runner: CliRunner,
+    ) -> None:
+        with runner.isolated_filesystem():
+            async with Client(mcp) as client:
+                with pytest.raises(Exception, match="Task #999 not found"):
+                    await client.call_tool("delete_task", {"task_id": 999})

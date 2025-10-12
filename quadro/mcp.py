@@ -200,5 +200,31 @@ def move_task(
     return command.show_task(task_id)
 
 
+@mcp.tool(description="Delete a task permanently")
+def delete_task(
+    task_id: Annotated[int, Field(description="The ID of the task to delete")],
+) -> Task:
+    """
+    Delete a task permanently.
+
+    Parameters
+    ----------
+    task_id : int
+        The ID of the task to delete.
+
+    Returns
+    -------
+    Task
+        The deleted task object (before deletion).
+
+    Raises
+    ------
+    TaskNotFoundError
+        If task with the specified ID does not exist.
+    """
+    task, _ = command.delete_task(task_id)
+    return task
+
+
 if __name__ == "__main__":
     mcp.run()
