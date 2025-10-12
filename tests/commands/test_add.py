@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 import pytest
 from click.testing import CliRunner
+from freezegun import freeze_time
 
 from quadro.cli import main
 from quadro.commands.add import add_task
@@ -54,6 +55,61 @@ class TestAddTask:
             assert task_id_1 == 1
             assert task_id_2 == 2
             assert task_id_3 == 3
+
+    @freeze_time("2024-01-15 10:30:00")
+    def test_add_task_with_description(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            task_id, file_path = add_task(
+                "Task with description", description="This is a detailed description"
+            )
+
+            assert task_id == 1
+            assert file_path == "tasks/1.md"
+
+            task_file = Path(file_path)
+            assert task_file.exists()
+
+            content = task_file.read_text()
+            expected = dedent("""\
+                ---
+                created: '2024-01-15T10:30:00+00:00'
+                status: todo
+                ---
+
+                # Task with description
+
+                This is a detailed description
+                """)
+
+            assert content == expected
+
+    @freeze_time("2024-01-15 10:30:00")
+    def test_add_task_with_description_and_milestone(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            task_id, file_path = add_task(
+                "Complex task", description="Detailed explanation of the task", milestone="v2.0"
+            )
+
+            assert task_id == 1
+            assert file_path == "tasks/v2.0/1.md"
+
+            task_file = Path(file_path)
+            assert task_file.exists()
+
+            content = task_file.read_text()
+            expected = dedent("""\
+                ---
+                created: '2024-01-15T10:30:00+00:00'
+                milestone: v2.0
+                status: todo
+                ---
+
+                # Complex task
+
+                Detailed explanation of the task
+                """)
+
+            assert content == expected
 
 
 class TestAddCommandCLI:
@@ -115,3 +171,86 @@ class TestAddCommandCLI:
                 No space left on device
                 Check disk space and file permissions.
                 """)
+
+    @freeze_time("2024-01-15 10:30:00")
+    def test_add_command_with_description(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            result = runner.invoke(
+                main,
+                ["add", "Task with description", "--description", "This is a detailed description"],
+            )
+
+            assert result.exit_code == 0
+            assert result.output == "✓ Created task #1\nFile: tasks/1.md\n"
+
+            task_file = Path("tasks/1.md")
+            assert task_file.exists()
+
+            content = task_file.read_text()
+            expected = dedent("""\
+                ---
+                created: '2024-01-15T10:30:00+00:00'
+                status: todo
+                ---
+
+                # Task with description
+
+                This is a detailed description
+                """)
+
+            assert content == expected
+
+    @freeze_time("2024-01-15 10:30:00")
+    def test_add_command_with_description_shorthand(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            result = runner.invoke(
+                main, ["add", "Task with description", "-d", "Using shorthand flag"]
+            )
+
+            assert result.exit_code == 0
+            assert result.output == "✓ Created task #1\nFile: tasks/1.md\n"
+
+            task_file = Path("tasks/1.md")
+            assert task_file.exists()
+
+            content = task_file.read_text()
+            expected = dedent("""\
+                ---
+                created: '2024-01-15T10:30:00+00:00'
+                status: todo
+                ---
+
+                # Task with description
+
+                Using shorthand flag
+                """)
+
+            assert content == expected
+
+    @freeze_time("2024-01-15 10:30:00")
+    def test_add_command_with_description_and_milestone(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            result = runner.invoke(
+                main, ["add", "Complex task", "-d", "Detailed explanation", "--milestone", "v2.0"]
+            )
+
+            assert result.exit_code == 0
+            assert result.output == "✓ Created task #1\nFile: tasks/v2.0/1.md\n"
+
+            task_file = Path("tasks/v2.0/1.md")
+            assert task_file.exists()
+
+            content = task_file.read_text()
+            expected = dedent("""\
+                ---
+                created: '2024-01-15T10:30:00+00:00'
+                milestone: v2.0
+                status: todo
+                ---
+
+                # Complex task
+
+                Detailed explanation
+                """)
+
+            assert content == expected

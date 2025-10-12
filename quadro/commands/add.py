@@ -6,7 +6,9 @@ from quadro.models import TaskStatus
 from quadro.storage import TaskStorage
 
 
-def add_task(title: str, milestone: str | None = None) -> tuple[int, str]:
+def add_task(
+    title: str, description: str | None = None, milestone: str | None = None
+) -> tuple[int, str]:
     """
     Add a new task.
 
@@ -14,6 +16,8 @@ def add_task(title: str, milestone: str | None = None) -> tuple[int, str]:
     ----------
     title : str
         The task title
+    description : str | None, optional
+        The task description, by default None
     milestone : str | None, optional
         Milestone name for the task, by default None
 
@@ -29,7 +33,7 @@ def add_task(title: str, milestone: str | None = None) -> tuple[int, str]:
     task = Task(
         id=task_id,
         title=title,
-        description="",
+        description=description or "",
         status=TaskStatus.TODO,
         milestone=milestone,
         created=datetime.now(UTC),

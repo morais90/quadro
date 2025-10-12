@@ -71,22 +71,26 @@ def main(ctx: click.Context) -> None:
 
 @main.command("add")
 @click.argument("title")
+@click.option("--description", "-d", default=None, help="Task description")
 @click.option("--milestone", default=None, help="Milestone name for the task")
 @handle_exceptions
-def add(title: str, milestone: str | None) -> None:
+def add(title: str, description: str | None, milestone: str | None) -> None:
     """Create a new task with the specified title.
 
     Creates a new task in TODO status and saves it as a markdown file.
-    Tasks can optionally be assigned to a milestone for organization.
+    Tasks can optionally be assigned to a milestone for organization and
+    include a description for additional context.
 
     \b
     Examples:
       $ quadro add "Implement login feature"
       $ quadro add "Add user authentication" --milestone mvp
+      $ quadro add "Fix bug in parser" --description "Parser fails on edge case"
+      $ quadro add "Add tests" -d "Write unit tests for auth module" --milestone mvp
     """
     console = Console()
 
-    task_id, file_path = add_task(title, milestone)
+    task_id, file_path = add_task(title, description, milestone)
 
     console.print(f"[green]✓[/green] Created task #{task_id}")
     console.print(f"[dim]File: {file_path}[/dim]")
