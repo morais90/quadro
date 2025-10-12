@@ -419,3 +419,66 @@ class TestCompleteTaskMCPTool:
             async with Client(mcp) as client:
                 with pytest.raises(Exception, match="is already done"):
                     await client.call_tool("complete_task", {"task_id": task.id})
+
+
+class TestMoveTaskMCPTool:
+    @pytest.mark.asyncio
+    @freeze_time(FROZEN_TIME)
+    async def test_move_task_from_root_to_milestone(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            task = add_task("Test Task")
+
+            async with Client(mcp) as client:
+                result = await client.call_tool(
+                    "move_task",
+                    {"task_id": task.id, "to_milestone": "mvp"},
+                )
+
+                expected = to_compact_json(build_task_json(task.id, "Test Task", milestone="mvp"))
+
+                assert result.content[0].text == expected
+
+    @pytest.mark.asyncio
+    @freeze_time(FROZEN_TIME)
+    async def test_move_task_from_milestone_to_another_milestone(
+        self,
+        runner: CliRunner,
+    ) -> None:
+        with runner.isolated_filesystem():
+            task = add_task("Test Task", milestone="mvp")
+
+            async with Client(mcp) as client:
+                result = await client.call_tool(
+                    "move_task",
+                    {"task_id": task.id, "to_milestone": "v2"},
+                )
+
+                expected = to_compact_json(build_task_json(task.id, "Test Task", milestone="v2"))
+
+                assert result.content[0].text == expected
+
+    @pytest.mark.asyncio
+    @freeze_time(FROZEN_TIME)
+    async def test_move_task_from_milestone_to_root(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            task = add_task("Test Task", milestone="mvp")
+
+            async with Client(mcp) as client:
+                result = await client.call_tool(
+                    "move_task",
+                    {"task_id": task.id, "to_milestone": "root"},
+                )
+
+                expected = to_compact_json(build_task_json(task.id, "Test Task"))
+
+                assert result.content[0].text == expected
+
+    @pytest.mark.asyncio
+    async def test_move_task_raises_error_for_nonexistent_task(
+        self,
+        runner: CliRunner,
+    ) -> None:
+        with runner.isolated_filesystem():
+            async with Client(mcp) as client:
+                with pytest.raises(Exception, match="Task #999 not found"):
+                    await client.call_tool("move_task", {"task_id": 999, "to_milestone": "mvp"})

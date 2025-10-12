@@ -168,5 +168,37 @@ def complete_task(
     return command.complete_task(task_id)
 
 
+@mcp.tool(description="Move a task to a different milestone")
+def move_task(
+    task_id: Annotated[int, Field(description="The ID of the task to move")],
+    to_milestone: Annotated[
+        str,
+        Field(description="Target milestone or 'root' for no milestone"),
+    ],
+) -> Task:
+    """
+    Move a task to a different milestone.
+
+    Parameters
+    ----------
+    task_id : int
+        The ID of the task to move.
+    to_milestone : str
+        Target milestone name, or "root" for no milestone.
+
+    Returns
+    -------
+    Task
+        The moved task object.
+
+    Raises
+    ------
+    TaskNotFoundError
+        If task with the specified ID does not exist.
+    """
+    command.move_task(task_id, to_milestone)
+    return command.show_task(task_id)
+
+
 if __name__ == "__main__":
     mcp.run()
