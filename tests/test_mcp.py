@@ -177,3 +177,31 @@ class TestListTasksMCPTool:
             async with Client(mcp) as client:
                 with pytest.raises(Exception, match="is not one of"):
                     await client.call_tool("list_tasks", {"status": "invalid"})
+
+
+class TestGetTaskMCPTool:
+    @pytest.mark.asyncio
+    @freeze_time(FROZEN_TIME)
+    async def test_get_task_returns_task(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            task_id, _ = add_task("Test Task", milestone="mvp")
+
+            async with Client(mcp) as client:
+                result = await client.call_tool("get_task", {"task_id": task_id})
+
+                expected = json.dumps(
+                    build_task_json(task_id, "Test Task", milestone="mvp"),
+                    separators=(",", ":"),
+                )
+
+                assert result.content[0].text == expected
+
+    @pytest.mark.asyncio
+    async def test_get_task_raises_error_for_nonexistent_task(
+        self,
+        runner: CliRunner,
+    ) -> None:
+        with runner.isolated_filesystem():
+            async with Client(mcp) as client:
+                with pytest.raises(Exception, match="Task #999 not found"):
+                    await client.call_tool("get_task", {"task_id": 999})
