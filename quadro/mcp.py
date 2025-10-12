@@ -3,6 +3,7 @@ from typing import Annotated
 from fastmcp import FastMCP
 from pydantic import Field
 
+from quadro.commands.add import add_task
 from quadro.commands.list import list_tasks as get_tasks
 from quadro.commands.show import show_task
 from quadro.models import Task
@@ -82,6 +83,35 @@ def get_task(
         If task with the specified ID does not exist.
     """
     return show_task(task_id)
+
+
+@mcp.tool(description="Create a new task with title, description, and optional milestone")
+def create_task(
+    title: Annotated[str, Field(description="The title of the task")],
+    description: Annotated[str, Field(description="The description of the task")] = "",
+    milestone: Annotated[
+        str | None,
+        Field(description="The milestone to assign the task to"),
+    ] = None,
+) -> Task:
+    """
+    Create a new task.
+
+    Parameters
+    ----------
+    title : str
+        The title of the task.
+    description : str
+        The description of the task. Defaults to empty string.
+    milestone : str | None
+        The milestone to assign the task to. If None, task is not assigned to any milestone.
+
+    Returns
+    -------
+    Task
+        The newly created Task object.
+    """
+    return add_task(title=title, description=description, milestone=milestone)
 
 
 if __name__ == "__main__":

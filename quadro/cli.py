@@ -90,10 +90,9 @@ def add(title: str, description: str | None, milestone: str | None) -> None:
     """
     console = Console()
 
-    task_id, file_path = add_task(title, description, milestone)
+    task = add_task(title, description, milestone)
 
-    console.print(f"[green]✓[/green] Created task #{task_id}")
-    console.print(f"[dim]File: {file_path}[/dim]")
+    console.print(f"[green]✓[/green] Created task #{task.id}")
 
 
 @main.command("list")

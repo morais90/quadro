@@ -18,12 +18,13 @@ def runner() -> CliRunner:
 class TestAddTask:
     def test_add_task_basic(self, runner: CliRunner) -> None:
         with runner.isolated_filesystem():
-            task_id, file_path = add_task("Test task")
+            task = add_task("Test task")
 
-            assert task_id == 1
-            assert file_path == "tasks/1.md"
+            assert task.id == 1
+            assert task.title == "Test task"
+            assert task.milestone is None
 
-            task_file = Path(file_path)
+            task_file = Path("tasks/1.md")
             assert task_file.exists()
 
             content = task_file.read_text()
@@ -33,12 +34,13 @@ class TestAddTask:
 
     def test_add_task_with_milestone(self, runner: CliRunner) -> None:
         with runner.isolated_filesystem():
-            task_id, file_path = add_task("Task with milestone", milestone="mvp")
+            task = add_task("Task with milestone", milestone="mvp")
 
-            assert task_id == 1
-            assert file_path == "tasks/mvp/1.md"
+            assert task.id == 1
+            assert task.title == "Task with milestone"
+            assert task.milestone == "mvp"
 
-            task_file = Path(file_path)
+            task_file = Path("tasks/mvp/1.md")
             assert task_file.exists()
 
             content = task_file.read_text()
@@ -48,25 +50,23 @@ class TestAddTask:
 
     def test_add_task_increments_id(self, runner: CliRunner) -> None:
         with runner.isolated_filesystem():
-            task_id_1, _ = add_task("First task")
-            task_id_2, _ = add_task("Second task")
-            task_id_3, _ = add_task("Third task")
+            task1 = add_task("First task")
+            task2 = add_task("Second task")
+            task3 = add_task("Third task")
 
-            assert task_id_1 == 1
-            assert task_id_2 == 2
-            assert task_id_3 == 3
+            assert task1.id == 1
+            assert task2.id == 2
+            assert task3.id == 3
 
     @freeze_time("2024-01-15 10:30:00")
     def test_add_task_with_description(self, runner: CliRunner) -> None:
         with runner.isolated_filesystem():
-            task_id, file_path = add_task(
-                "Task with description", description="This is a detailed description"
-            )
+            task = add_task("Task with description", description="This is a detailed description")
 
-            assert task_id == 1
-            assert file_path == "tasks/1.md"
+            assert task.id == 1
+            assert task.description == "This is a detailed description"
 
-            task_file = Path(file_path)
+            task_file = Path("tasks/1.md")
             assert task_file.exists()
 
             content = task_file.read_text()
@@ -86,14 +86,15 @@ class TestAddTask:
     @freeze_time("2024-01-15 10:30:00")
     def test_add_task_with_description_and_milestone(self, runner: CliRunner) -> None:
         with runner.isolated_filesystem():
-            task_id, file_path = add_task(
+            task = add_task(
                 "Complex task", description="Detailed explanation of the task", milestone="v2.0"
             )
 
-            assert task_id == 1
-            assert file_path == "tasks/v2.0/1.md"
+            assert task.id == 1
+            assert task.description == "Detailed explanation of the task"
+            assert task.milestone == "v2.0"
 
-            task_file = Path(file_path)
+            task_file = Path("tasks/v2.0/1.md")
             assert task_file.exists()
 
             content = task_file.read_text()
@@ -118,7 +119,7 @@ class TestAddCommandCLI:
             result = runner.invoke(main, ["add", "Test task"])
 
             assert result.exit_code == 0
-            assert result.output == "✓ Created task #1\nFile: tasks/1.md\n"
+            assert result.output == "✓ Created task #1\n"
 
             task_file = Path("tasks/1.md")
             assert task_file.exists()
@@ -132,7 +133,7 @@ class TestAddCommandCLI:
             result = runner.invoke(main, ["add", "Task with milestone", "--milestone", "mvp"])
 
             assert result.exit_code == 0
-            assert result.output == "✓ Created task #1\nFile: tasks/mvp/1.md\n"
+            assert result.output == "✓ Created task #1\n"
 
             task_file = Path("tasks/mvp/1.md")
             assert task_file.exists()
@@ -181,7 +182,7 @@ class TestAddCommandCLI:
             )
 
             assert result.exit_code == 0
-            assert result.output == "✓ Created task #1\nFile: tasks/1.md\n"
+            assert result.output == "✓ Created task #1\n"
 
             task_file = Path("tasks/1.md")
             assert task_file.exists()
@@ -208,7 +209,7 @@ class TestAddCommandCLI:
             )
 
             assert result.exit_code == 0
-            assert result.output == "✓ Created task #1\nFile: tasks/1.md\n"
+            assert result.output == "✓ Created task #1\n"
 
             task_file = Path("tasks/1.md")
             assert task_file.exists()
@@ -235,7 +236,7 @@ class TestAddCommandCLI:
             )
 
             assert result.exit_code == 0
-            assert result.output == "✓ Created task #1\nFile: tasks/v2.0/1.md\n"
+            assert result.output == "✓ Created task #1\n"
 
             task_file = Path("tasks/v2.0/1.md")
             assert task_file.exists()

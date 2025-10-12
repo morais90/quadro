@@ -17,17 +17,18 @@ FROZEN_TIME = "2025-10-06 12:00:00"
 FROZEN_TIME_ISO = "2025-10-06T12:00:00Z"
 
 
-def build_task_json(
+def build_task_json(  # noqa: PLR0913
     task_id: int,
     title: str,
     status: str = "todo",
     milestone: str | None = None,
     completed: str | None = None,
+    description: str = "",
 ) -> dict[str, str | int | None]:
     return {
         "id": task_id,
         "title": title,
-        "description": "",
+        "description": description,
         "status": status,
         "milestone": milestone,
         "created": FROZEN_TIME_ISO,
@@ -35,7 +36,7 @@ def build_task_json(
     }
 
 
-def to_compact_json(data: list[dict[str, str | int | None]]) -> str:
+def to_compact_json(data: list[dict[str, str | int | None]] | dict[str, str | int | None]) -> str:
     return json.dumps(data, separators=(",", ":"))
 
 
@@ -98,21 +99,21 @@ class TestListTasksMCPTool:
     async def test_list_tasks_filters_by_status(self, runner: CliRunner) -> None:
         with runner.isolated_filesystem():
             add_task("Task 1")
-            task_id_2, _ = add_task("Task 2")
-            task_id_3, _ = add_task("Task 3")
+            task2 = add_task("Task 2")
+            task3 = add_task("Task 3")
 
             storage = TaskStorage()
-            task2 = storage.load_task(task_id_2)
-            task3 = storage.load_task(task_id_3)
-            assert task2 is not None
-            assert task3 is not None
+            task2_loaded = storage.load_task(task2.id)
+            task3_loaded = storage.load_task(task3.id)
+            assert task2_loaded is not None
+            assert task3_loaded is not None
 
-            task2.status = TaskStatus.PROGRESS
-            storage.save_task(task2)
+            task2_loaded.status = TaskStatus.PROGRESS
+            storage.save_task(task2_loaded)
 
-            task3.status = TaskStatus.DONE
-            task3.completed = datetime.now(UTC)
-            storage.save_task(task3)
+            task3_loaded.status = TaskStatus.DONE
+            task3_loaded.completed = datetime.now(UTC)
+            storage.save_task(task3_loaded)
 
             async with Client(mcp) as client:
                 result = await client.call_tool("list_tasks", {"status": TaskStatus.TODO})
@@ -128,22 +129,22 @@ class TestListTasksMCPTool:
         runner: CliRunner,
     ) -> None:
         with runner.isolated_filesystem():
-            task_id_1, _ = add_task("Task 1", milestone="mvp")
-            task_id_2, _ = add_task("Task 2", milestone="mvp")
+            task1 = add_task("Task 1", milestone="mvp")
+            task2 = add_task("Task 2", milestone="mvp")
             add_task("Task 3", milestone="v2")
 
             storage = TaskStorage()
-            task1 = storage.load_task(task_id_1)
-            task2 = storage.load_task(task_id_2)
-            assert task1 is not None
-            assert task2 is not None
+            task1_loaded = storage.load_task(task1.id)
+            task2_loaded = storage.load_task(task2.id)
+            assert task1_loaded is not None
+            assert task2_loaded is not None
 
-            task1.status = TaskStatus.DONE
-            task1.completed = datetime.now(UTC)
-            storage.save_task(task1)
+            task1_loaded.status = TaskStatus.DONE
+            task1_loaded.completed = datetime.now(UTC)
+            storage.save_task(task1_loaded)
 
-            task2.status = TaskStatus.PROGRESS
-            storage.save_task(task2)
+            task2_loaded.status = TaskStatus.PROGRESS
+            storage.save_task(task2_loaded)
 
             async with Client(mcp) as client:
                 result = await client.call_tool(
@@ -184,15 +185,12 @@ class TestGetTaskMCPTool:
     @freeze_time(FROZEN_TIME)
     async def test_get_task_returns_task(self, runner: CliRunner) -> None:
         with runner.isolated_filesystem():
-            task_id, _ = add_task("Test Task", milestone="mvp")
+            task = add_task("Test Task", milestone="mvp")
 
             async with Client(mcp) as client:
-                result = await client.call_tool("get_task", {"task_id": task_id})
+                result = await client.call_tool("get_task", {"task_id": task.id})
 
-                expected = json.dumps(
-                    build_task_json(task_id, "Test Task", milestone="mvp"),
-                    separators=(",", ":"),
-                )
+                expected = to_compact_json(build_task_json(task.id, "Test Task", milestone="mvp"))
 
                 assert result.content[0].text == expected
 
@@ -205,3 +203,79 @@ class TestGetTaskMCPTool:
             async with Client(mcp) as client:
                 with pytest.raises(Exception, match="Task #999 not found"):
                     await client.call_tool("get_task", {"task_id": 999})
+
+
+class TestCreateTaskMCPTool:
+    @pytest.mark.asyncio
+    @freeze_time(FROZEN_TIME)
+    async def test_create_task_with_title_only(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            async with Client(mcp) as client:
+                result = await client.call_tool("create_task", {"title": "New Task"})
+
+                expected = to_compact_json(build_task_json(1, "New Task"))
+
+                assert result.content[0].text == expected
+
+    @pytest.mark.asyncio
+    @freeze_time(FROZEN_TIME)
+    async def test_create_task_with_description(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            async with Client(mcp) as client:
+                result = await client.call_tool(
+                    "create_task",
+                    {"title": "New Task", "description": "Task description"},
+                )
+
+                expected = to_compact_json(
+                    build_task_json(1, "New Task", description="Task description")
+                )
+
+                assert result.content[0].text == expected
+
+    @pytest.mark.asyncio
+    @freeze_time(FROZEN_TIME)
+    async def test_create_task_with_milestone(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            async with Client(mcp) as client:
+                result = await client.call_tool(
+                    "create_task",
+                    {"title": "New Task", "milestone": "mvp"},
+                )
+
+                expected = to_compact_json(build_task_json(1, "New Task", milestone="mvp"))
+
+                assert result.content[0].text == expected
+
+    @pytest.mark.asyncio
+    @freeze_time(FROZEN_TIME)
+    async def test_create_task_with_all_parameters(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            async with Client(mcp) as client:
+                result = await client.call_tool(
+                    "create_task",
+                    {
+                        "title": "New Task",
+                        "description": "Task description",
+                        "milestone": "mvp",
+                    },
+                )
+
+                expected = to_compact_json(
+                    build_task_json(1, "New Task", milestone="mvp", description="Task description")
+                )
+
+                assert result.content[0].text == expected
+
+    @pytest.mark.asyncio
+    @freeze_time(FROZEN_TIME)
+    async def test_create_task_increments_id(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            add_task("Existing Task")
+
+            async with Client(mcp) as client:
+                result = await client.call_tool("create_task", {"title": "New Task"})
+
+                expected = to_compact_json(build_task_json(2, "New Task"))
+
+                assert result.content[0].text == expected

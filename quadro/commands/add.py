@@ -6,9 +6,7 @@ from quadro.models import TaskStatus
 from quadro.storage import TaskStorage
 
 
-def add_task(
-    title: str, description: str | None = None, milestone: str | None = None
-) -> tuple[int, str]:
+def add_task(title: str, description: str | None = None, milestone: str | None = None) -> Task:
     """
     Add a new task.
 
@@ -23,9 +21,8 @@ def add_task(
 
     Returns
     -------
-    tuple[int, str]
-        A tuple of (task_id, file_path) where task_id is the ID of the created task
-        and file_path is the path to the saved task file
+    Task
+        The newly created Task object
     """
     storage = TaskStorage()
 
@@ -40,6 +37,6 @@ def add_task(
         completed=None,
     )
 
-    file_path = storage.save_task(task)
+    storage.save_task(task)
 
-    return task_id, str(file_path)
+    return task
