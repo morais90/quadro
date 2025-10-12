@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "quadro": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "-m",
+        "quadro.mcp"
+      ],
+      "env": {}
+    }
+  }
+}
