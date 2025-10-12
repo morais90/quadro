@@ -6,8 +6,8 @@ import pytest
 from click.testing import CliRunner
 
 from quadro.cli import main
-from quadro.commands.add import add_task
-from quadro.commands.delete import delete_task
+from quadro.command import add_task
+from quadro.command import delete_task
 from quadro.exceptions import TaskNotFoundError
 
 

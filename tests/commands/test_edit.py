@@ -6,9 +6,9 @@ import pytest
 from click.testing import CliRunner
 
 from quadro.cli import main
-from quadro.commands.add import add_task
-from quadro.commands.edit import get_task_markdown
-from quadro.commands.edit import update_task_from_markdown
+from quadro.command import add_task
+from quadro.command import get_task_markdown
+from quadro.command import update_task_from_markdown
 from quadro.exceptions import TaskNotFoundError
 
 

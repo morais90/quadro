@@ -7,7 +7,7 @@ from click.testing import CliRunner
 from freezegun import freeze_time
 
 from quadro.cli import main
-from quadro.commands.add import add_task
+from quadro.command import add_task
 
 
 @pytest.fixture

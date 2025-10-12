@@ -3,9 +3,9 @@ from typing import Annotated
 from fastmcp import FastMCP
 from pydantic import Field
 
-from quadro.commands.add import add_task
-from quadro.commands.list import list_tasks as get_tasks
-from quadro.commands.show import show_task
+from quadro.command import add_task
+from quadro.command import list_tasks as get_tasks
+from quadro.command import show_task
 from quadro.models import Task
 from quadro.models import TaskStatus
 

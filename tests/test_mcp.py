@@ -7,7 +7,7 @@ from click.testing import CliRunner
 from fastmcp.client import Client
 from freezegun import freeze_time
 
-from quadro.commands.add import add_task
+from quadro.command import add_task
 from quadro.mcp import mcp
 from quadro.models import TaskStatus
 from quadro.storage import TaskStorage

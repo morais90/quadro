@@ -5,16 +5,16 @@ from typing import Any
 import click
 from rich.console import Console
 
-from quadro.commands.add import add_task
-from quadro.commands.delete import delete_task
-from quadro.commands.done import complete_task
-from quadro.commands.edit import get_task_markdown
-from quadro.commands.edit import update_task_from_markdown
-from quadro.commands.list import list_tasks as get_all_tasks
-from quadro.commands.milestones import list_milestones
-from quadro.commands.move import move_task
-from quadro.commands.show import show_task
-from quadro.commands.start import start_task
+from quadro.command import add_task
+from quadro.command import complete_task
+from quadro.command import delete_task
+from quadro.command import get_task_markdown
+from quadro.command import list_milestones
+from quadro.command import list_tasks as get_all_tasks
+from quadro.command import move_task
+from quadro.command import show_task
+from quadro.command import start_task
+from quadro.command import update_task_from_markdown
 from quadro.exceptions import TaskAlreadyDoneError
 from quadro.exceptions import TaskAlreadyInProgressError
 from quadro.exceptions import TaskNotFoundError

@@ -6,8 +6,8 @@ import pytest
 from click.testing import CliRunner
 
 from quadro.cli import main
-from quadro.commands.add import add_task
-from quadro.commands.start import start_task
+from quadro.command import add_task
+from quadro.command import start_task
 from quadro.exceptions import TaskAlreadyDoneError
 from quadro.exceptions import TaskAlreadyInProgressError
 from quadro.exceptions import TaskNotFoundError

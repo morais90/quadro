@@ -7,8 +7,8 @@ from click.testing import CliRunner
 from freezegun import freeze_time
 
 from quadro.cli import main
-from quadro.commands.add import add_task
-from quadro.commands.show import show_task
+from quadro.command import add_task
+from quadro.command import show_task
 from quadro.exceptions import TaskNotFoundError
 from quadro.models import Task
 from quadro.models import TaskStatus
