@@ -514,3 +514,55 @@ class TestDeleteTaskMCPTool:
             async with Client(mcp) as client:
                 with pytest.raises(Exception, match="Task #999 not found"):
                     await client.call_tool("delete_task", {"task_id": 999})
+
+
+class TestListMilestonesMCPTool:
+    @pytest.mark.asyncio
+    @freeze_time(FROZEN_TIME)
+    async def test_list_milestones_returns_tasks_with_milestones(
+        self,
+        runner: CliRunner,
+    ) -> None:
+        with runner.isolated_filesystem():
+            add_task("Task 1", milestone="mvp")
+            add_task("Task 2")
+            add_task("Task 3", milestone="v2")
+            add_task("Task 4", milestone="mvp")
+
+            async with Client(mcp) as client:
+                result = await client.call_tool("list_milestones", {})
+
+                expected = to_compact_json(
+                    [
+                        build_task_json(1, "Task 1", milestone="mvp"),
+                        build_task_json(3, "Task 3", milestone="v2"),
+                        build_task_json(4, "Task 4", milestone="mvp"),
+                    ]
+                )
+
+                assert result.content[0].text == expected
+
+    @pytest.mark.asyncio
+    async def test_list_milestones_raises_error_when_no_tasks_exist(
+        self,
+        runner: CliRunner,
+    ) -> None:
+        with runner.isolated_filesystem():
+            async with Client(mcp) as client:
+                with pytest.raises(Exception, match="No tasks found"):
+                    await client.call_tool("list_milestones", {})
+
+    @pytest.mark.asyncio
+    @freeze_time(FROZEN_TIME)
+    async def test_list_milestones_returns_empty_when_no_milestones_assigned(
+        self,
+        runner: CliRunner,
+    ) -> None:
+        with runner.isolated_filesystem():
+            add_task("Task 1")
+            add_task("Task 2")
+
+            async with Client(mcp) as client:
+                result = await client.call_tool("list_milestones", {})
+
+                assert result.content == []

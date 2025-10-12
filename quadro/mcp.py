@@ -226,5 +226,24 @@ def delete_task(
     return task
 
 
+@mcp.tool(description="List all tasks that belong to milestones")
+def list_milestones() -> list[Task]:
+    """
+    List all tasks that belong to milestones.
+
+    Returns
+    -------
+    list[Task]
+        A list of tasks that have a milestone assigned, sorted by ID.
+        May be empty if no tasks have milestones.
+
+    Raises
+    ------
+    TaskNotFoundError
+        If no tasks exist in the system.
+    """
+    return command.list_milestones()
+
+
 if __name__ == "__main__":
     mcp.run()
