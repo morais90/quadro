@@ -6,6 +6,7 @@ from pydantic import Field
 from quadro import command
 from quadro.models import Task
 from quadro.models import TaskStatus
+from quadro.storage import TaskStorage
 
 
 mcp = FastMCP(
@@ -243,6 +244,36 @@ def list_milestones() -> list[Task]:
         If no tasks exist in the system.
     """
     return command.list_milestones()
+
+
+@mcp.resource("quadro://task/{task_id}")
+def get_task_resource(task_id: int) -> str:
+    """
+    Get the full markdown content of a task.
+
+    Parameters
+    ----------
+    task_id : int
+        The ID of the task to retrieve.
+
+    Returns
+    -------
+    str
+        The task's markdown content including frontmatter.
+
+    Raises
+    ------
+    TaskNotFoundError
+        If task with the specified ID does not exist.
+    """
+    storage = TaskStorage()
+    task = storage.load_task(task_id)
+
+    if task is None:
+        msg = f"Task {task_id} not found"
+        raise ValueError(msg)
+
+    return task.to_markdown()
 
 
 if __name__ == "__main__":

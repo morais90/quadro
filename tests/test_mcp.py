@@ -1,6 +1,7 @@
 import json
 from datetime import UTC
 from datetime import datetime
+from textwrap import dedent
 
 import pytest
 from click.testing import CliRunner
@@ -15,6 +16,7 @@ from quadro.storage import TaskStorage
 
 FROZEN_TIME = "2025-10-06 12:00:00"
 FROZEN_TIME_ISO = "2025-10-06T12:00:00Z"
+FROZEN_TIME_ISO_WITH_TZ = "2025-10-06T12:00:00+00:00"
 
 
 def build_task_json(  # noqa: PLR0913
@@ -566,3 +568,127 @@ class TestListMilestonesMCPTool:
                 result = await client.call_tool("list_milestones", {})
 
                 assert result.content == []
+
+
+class TestGetTaskResourceMCP:
+    @pytest.mark.asyncio
+    @freeze_time(FROZEN_TIME)
+    async def test_get_task_resource_returns_markdown(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            task = add_task("Test Task", description="Task description", milestone="mvp")
+
+            async with Client(mcp) as client:
+                result = await client.read_resource(f"quadro://task/{task.id}")
+
+                expected_markdown = dedent(f"""\
+                    ---
+                    created: '{FROZEN_TIME_ISO_WITH_TZ}'
+                    milestone: mvp
+                    status: todo
+                    ---
+
+                    # Test Task
+
+                    Task description
+                    """)
+
+                assert result[0].text == expected_markdown
+
+    @pytest.mark.asyncio
+    @freeze_time(FROZEN_TIME)
+    async def test_get_task_resource_without_description(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            task = add_task("Test Task")
+
+            async with Client(mcp) as client:
+                result = await client.read_resource(f"quadro://task/{task.id}")
+
+                expected_markdown = dedent(f"""\
+                    ---
+                    created: '{FROZEN_TIME_ISO_WITH_TZ}'
+                    status: todo
+                    ---
+
+                    # Test Task
+                    """)
+
+                assert result[0].text == expected_markdown
+
+    @pytest.mark.asyncio
+    @freeze_time(FROZEN_TIME)
+    async def test_get_task_resource_completed_task(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            task = add_task("Test Task", milestone="mvp")
+            storage = TaskStorage()
+            task_loaded = storage.load_task(task.id)
+            assert task_loaded is not None
+
+            task_loaded.status = TaskStatus.DONE
+            task_loaded.completed = datetime.now(UTC)
+            storage.save_task(task_loaded)
+
+            async with Client(mcp) as client:
+                result = await client.read_resource(f"quadro://task/{task.id}")
+
+                expected_markdown = dedent(f"""\
+                    ---
+                    completed: '{FROZEN_TIME_ISO_WITH_TZ}'
+                    created: '{FROZEN_TIME_ISO_WITH_TZ}'
+                    milestone: mvp
+                    status: done
+                    ---
+
+                    # Test Task
+                    """)
+
+                assert result[0].text == expected_markdown
+
+    @pytest.mark.asyncio
+    @freeze_time(FROZEN_TIME)
+    async def test_get_task_resource_with_complex_markdown(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            description = dedent("""\
+                ## Implementation Details
+
+                - [ ] Create resource for each task
+                - [ ] Resource contains full task markdown content
+                - [x] Allows AI to read task files directly
+
+                ### Code Example
+
+                ```python
+                def get_task(task_id: int) -> Task:
+                    return storage.load_task(task_id)
+                ```
+
+                **Important**: This needs to be tested thoroughly.
+
+                > Note: Auto-updates when tasks change.""")
+
+            task = add_task("Complex Task", description=description, milestone="v2")
+
+            async with Client(mcp) as client:
+                result = await client.read_resource(f"quadro://task/{task.id}")
+
+                expected_markdown = f"""---
+created: '{FROZEN_TIME_ISO_WITH_TZ}'
+milestone: v2
+status: todo
+---
+
+# Complex Task
+
+{description}
+"""
+
+                assert result[0].text == expected_markdown
+
+    @pytest.mark.asyncio
+    async def test_get_task_resource_raises_error_for_nonexistent_task(
+        self,
+        runner: CliRunner,
+    ) -> None:
+        with runner.isolated_filesystem():
+            async with Client(mcp) as client:
+                with pytest.raises(Exception, match="Task 999 not found"):
+                    await client.read_resource("quadro://task/999")
