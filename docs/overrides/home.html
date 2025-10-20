@@ -1,0 +1,107 @@
+{% extends "main.html" %}
+
+{% block site_nav %}{% endblock %}
+
+{% block content %}
+<div class="quadro-landing-container">
+  <!-- Section 1: Hero -->
+  <section class="quadro-section quadro-section--hero">
+    <div class="quadro-section__content">
+      <div class="quadro-section__text">
+        <p class="quadro-landing__tagline">Task management for the AI generation</p>
+        <p class="quadro-landing__description quadro-landing__description--hero">
+          Terminal-native • Markdown-powered • AI-ready
+        </p>
+      </div>
+
+      <div class="quadro-section__visual">
+        <canvas id="quadro-canvas"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2: MCP Integration -->
+  <section class="quadro-section quadro-section--mcp">
+    <div class="quadro-section__content quadro-section__content--inverted">
+      <div class="quadro-section__visual">
+        <canvas id="quadro-canvas-mcp"></canvas>
+      </div>
+
+      <div class="quadro-section__text">
+        <p class="quadro-landing__tagline">Built for AI coding assistants</p>
+        <p class="quadro-landing__description quadro-landing__description--mcp">
+          Quadro integrates natively with the Model Context Protocol, giving AI assistants direct access to your task board. Your AI can read, create, and manage tasks automatically, turning natural conversations into organized action items without breaking your flow.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: CTA -->
+  <section class="quadro-section quadro-section--cta">
+    <div class="quadro-section__content quadro-section__content--centered">
+      <div class="quadro-section__cta">
+        <h2 class="quadro-landing__cta-title">Ready to actually enjoy your task manager?</h2>
+        <p class="quadro-landing__cta-subtitle">It's quick to try. Even quicker to love.</p>
+        <a href="{{ 'getting-started/installation/' | url }}" class="quadro-landing__button quadro-landing__button--large">
+          Get Started
+        </a>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<meta name="color-scheme" content="dark light">
+<style>
+  .md-sidebar,
+  .md-footer {
+    display: none;
+  }
+
+  .md-content {
+    margin: 0 auto;
+    height: auto;
+  }
+
+  .md-content__inner {
+    margin: 0 auto;
+    height: auto;
+  }
+
+  .md-main__inner {
+    margin: 0 auto;
+    height: auto;
+  }
+
+  .md-main {
+    height: calc(100vh - 98px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-behavior: auto;
+    background: linear-gradient(135deg, var(--quadro-black) 0%, var(--quadro-black) 40%, #121212 50%, var(--quadro-black) 60%, var(--quadro-black) 100%);
+  }
+
+  /* Light mode gradient */
+  [data-md-color-scheme="default"] .md-main {
+    background: linear-gradient(135deg, var(--quadro-light-bg) 0%, var(--quadro-light-bg) 30%, var(--quadro-light-surface) 50%, var(--quadro-light-bg) 70%, var(--quadro-light-bg) 100%);
+  }
+
+  .md-typeset {
+    margin: 0;
+    padding: 0;
+  }
+
+  .md-typeset::before {
+    display: none;
+  }
+
+  /* Responsive height adjustments */
+  @media (max-width: 1200px) {
+    .md-main {
+      height: calc(100vh - 50px);
+    }
+  }
+</style>
+{% endblock %}

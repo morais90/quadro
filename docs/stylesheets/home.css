@@ -1,0 +1,369 @@
+/* Landing page - Cyberpunk Minimalist */
+
+:root {
+  /* Layout proportions: 40% text, 60% terminal */
+  --section-text-flex: 2;
+  --section-visual-flex: 3;
+
+  /* Header heights for viewport calculation */
+  --header-height-desktop: 96px;
+  --header-height-mobile: 48px;
+
+  /*
+   * Responsive breakpoints (for documentation only)
+   * Note: CSS variables cannot be used in @media queries,
+   * so breakpoints are hardcoded in media queries below:
+   * - Desktop: 1441px
+   * - Tablet: 1440px
+   * - Mobile: 768px
+   * - Small: 480px
+   */
+}
+
+/* Container for all sections */
+.quadro-landing-container {
+  width: 100%;
+  padding: 1rem;
+}
+
+/* Full-screen sections */
+.quadro-section {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - var(--header-height-desktop));
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.quadro-section__content {
+  width: 100%;
+  max-width: 1220px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0;
+}
+
+.quadro-section__text {
+  width: 100%;
+}
+
+.quadro-section__visual {
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  z-index: 1;
+}
+
+/* Desktop layout: side-by-side */
+@media (min-width: 1441px) {
+  .quadro-section__content {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .quadro-section__text {
+    flex: var(--section-text-flex);
+  }
+
+  .quadro-section__visual {
+    flex: var(--section-visual-flex);
+    justify-content: center;
+  }
+}
+
+/* Text content styling */
+.quadro-section__text {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 100%;
+  padding: 0 0 3rem 0;
+  animation: fadeInUp 0.8s ease-out;
+  z-index: 10;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.quadro-landing__title {
+  font-family: 'Satoshi', sans-serif;
+  font-size: clamp(3.5rem, 10vw, 6rem);
+  font-weight: 800;
+  margin: 0 0 1.5rem 0;
+  color: var(--quadro-accent);
+  letter-spacing: -0.02em;
+  line-height: 0.9;
+}
+
+.quadro-landing__tagline {
+  font-family: 'Satoshi', sans-serif;
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  color: var(--quadro-white);
+  margin: 0 0 1rem 0;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.quadro-landing__description {
+  font-family: 'Satoshi', sans-serif;
+  font-size: clamp(1rem, 1.5vw, 1.125rem);
+  color: var(--quadro-white);
+  line-height: 1.8;
+  margin: 0;
+  font-weight: 300;
+  letter-spacing: 0.01em;
+}
+
+.quadro-landing__description--hero {
+  background: linear-gradient(135deg, var(--quadro-accent-dim) 0%, var(--quadro-accent) 50%, var(--quadro-accent-dim) 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 8s ease infinite;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.quadro-landing__description--mcp {
+  font-size: clamp(0.875rem, 1.2vw, 1rem);
+}
+
+.quadro-landing__button {
+  display: inline-flex;
+  align-items: center;
+  padding: 1rem 2.5rem !important;
+  font-size: 1.125rem !important;
+  font-weight: 600 !important;
+  border-radius: 0 !important;
+  background: var(--quadro-accent) !important;
+  border: 2px solid var(--quadro-accent) !important;
+  transition: all 0.2s ease !important;
+  text-transform: none !important;
+  color: var(--quadro-black) !important;
+}
+
+.quadro-landing__button:hover {
+  background: transparent !important;
+  color: var(--quadro-accent) !important;
+}
+
+/* Canvas styling */
+#quadro-canvas,
+#quadro-canvas-mcp {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+}
+
+#quadro-canvas:active,
+#quadro-canvas-mcp:active {
+  cursor: grabbing;
+}
+
+/* CTA Section */
+.quadro-section--cta {
+  background: transparent;
+}
+
+.quadro-section__content--centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.quadro-section__cta {
+  max-width: 800px;
+  padding: 2rem;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.quadro-landing__cta-title {
+  font-family: 'Satoshi', sans-serif;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 800;
+  color: var(--quadro-white);
+  margin: 0 0 2rem 0;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.quadro-landing__cta-subtitle {
+  font-family: 'Satoshi', sans-serif;
+  font-size: clamp(1.125rem, 2vw, 1.5rem);
+  color: var(--quadro-white);
+  margin: 0 0 3rem 0;
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  line-height: 1.8;
+}
+
+.quadro-landing__button--large {
+  padding: 1.25rem 3rem !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: all 0.3s ease !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1440px) {
+  .quadro-section {
+    height: calc(100vh - var(--header-height-mobile));
+  }
+
+  .quadro-section__text {
+    padding: 0;
+    width: 100%;
+    max-width: none;
+    flex: var(--section-text-flex);
+    text-align: center;
+  }
+
+  .quadro-section__visual {
+    flex: var(--section-visual-flex);
+  }
+}
+
+@media (max-width: 1024px) {
+  .quadro-section__content--inverted {
+    flex-direction: column-reverse;
+  }
+}
+
+@media (max-width: 768px) {
+  .quadro-section__text {
+    max-width: 100%;
+    flex: var(--section-text-flex);
+  }
+
+  .quadro-section__visual {
+    justify-content: flex-end;
+    align-items: flex-end;
+    flex: var(--section-visual-flex);
+  }
+}
+
+/* Light mode overrides */
+[data-md-color-scheme="default"] .quadro-landing__title {
+  color: var(--quadro-light-text);
+}
+
+[data-md-color-scheme="default"] .quadro-landing__tagline {
+  color: var(--quadro-light-text);
+}
+
+[data-md-color-scheme="default"] .quadro-landing__description {
+  color: var(--quadro-light-text);
+}
+
+[data-md-color-scheme="default"] .quadro-landing__description--hero {
+  background: linear-gradient(135deg, var(--quadro-light-accent-dark) 0%, var(--quadro-light-accent) 50%, var(--quadro-light-accent-dark) 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-md-color-scheme="default"] .quadro-landing__button {
+  background: var(--quadro-light-accent) !important;
+  border-color: var(--quadro-light-accent) !important;
+  color: #ffffff !important;
+}
+
+[data-md-color-scheme="default"] .quadro-landing__button:hover {
+  background: transparent !important;
+  border-color: var(--quadro-light-accent) !important;
+  color: var(--quadro-light-accent) !important;
+  font-weight: 500;
+}
+
+[data-md-color-scheme="default"] .quadro-landing__cta-title {
+  color: var(--quadro-light-text);
+}
+
+[data-md-color-scheme="default"] .quadro-landing__cta-subtitle {
+  color: var(--quadro-light-text);
+}
+
+/* Landscape mobile orientation */
+@media (max-height: 500px) and (orientation: landscape) and (max-width: 1440px) {
+  .quadro-section__content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr;
+    gap: 1.5rem;
+    align-items: center;
+  }
+
+  .quadro-section__text {
+    padding: 0;
+    justify-content: flex-end;
+  }
+
+  .quadro-landing__tagline {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .quadro-landing__description {
+    font-size: 0.95rem;
+  }
+
+  .quadro-section__visual {
+    min-height: 250px;
+  }
+}
+
+.quadro-terminal-text {
+  font-family: monospace;
+  font-size: 15px;
+  width: 710px;
+  height: 410px;
+  background-color: transparent;
+  line-height: 1.5;
+  padding: 26px 18px;
+  color: #ffffff;
+  white-space: pre;
+  text-align: left;
+}
+
+@media (max-width: 1440px) {
+  .quadro-terminal-text {
+    font-size: 17px;
+  }
+}

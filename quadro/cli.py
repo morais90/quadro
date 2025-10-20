@@ -81,12 +81,14 @@ def add(title: str, description: str | None, milestone: str | None) -> None:
     Tasks can optionally be assigned to a milestone for organization and
     include a description for additional context.
 
-    \b
-    Examples:
-      $ quadro add "Implement login feature"
-      $ quadro add "Add user authentication" --milestone mvp
-      $ quadro add "Fix bug in parser" --description "Parser fails on edge case"
-      $ quadro add "Add tests" -d "Write unit tests for auth module" --milestone mvp
+    Examples
+    --------
+    ```bash
+    $ quadro add "Implement login feature"
+    $ quadro add "Add user authentication" --milestone mvp
+    $ quadro add "Fix bug in parser" --description "Parser fails on edge case"
+    $ quadro add "Add tests" -d "Write unit tests for auth module" --milestone mvp
+    ```
     """
     console = Console()
 
@@ -117,13 +119,15 @@ def list_tasks(
 
     This is the default command when running 'quadro' without arguments.
 
-    \b
-    Examples:
-      $ quadro list
-      $ quadro list --milestone mvp
-      $ quadro list --todo
-      $ quadro list --todo --progress
-      $ quadro list --done --milestone mvp
+    Examples
+    --------
+    ```bash
+    $ quadro list
+    $ quadro list --milestone mvp
+    $ quadro list --todo
+    $ quadro list --todo --progress
+    $ quadro list --done --milestone mvp
+    ```
     """
     console = Console()
     renderer = Renderer(console)
@@ -157,9 +161,11 @@ def start(task_id: int) -> None:
     If the task is already in progress or completed, a warning is displayed
     but the command exits successfully.
 
-    \b
-    Example:
-      $ quadro start 1
+    Examples
+    --------
+    ```bash
+    $ quadro start 1
+    ```
     """
     console = Console()
 
@@ -185,9 +191,11 @@ def done(task_id: int) -> None:
     If the task is already completed, a warning is displayed but the command
     exits successfully.
 
-    \b
-    Example:
-      $ quadro done 1
+    Examples
+    --------
+    ```bash
+    $ quadro done 1
+    ```
     """
     console = Console()
 
@@ -212,9 +220,11 @@ def show(task_id: int) -> None:
 
     The task details are rendered in a formatted, color-coded display.
 
-    \b
-    Example:
-      $ quadro show 1
+    Examples
+    --------
+    ```bash
+    $ quadro show 1
+    ```
     """
     console = Console()
     renderer = Renderer(console)
@@ -239,9 +249,11 @@ def milestones() -> None:
     Only tasks that have been assigned to a milestone are included in this
     view. Tasks without a milestone are not shown.
 
-    \b
-    Example:
-      $ quadro milestones
+    Examples
+    --------
+    ```bash
+    $ quadro milestones
+    ```
     """
     console = Console()
     renderer = Renderer(console)
@@ -273,11 +285,13 @@ def move(task_id: int, to: str) -> None:
     Use 'root' as the target to move a task out of any milestone to the
     root directory.
 
-    \b
-    Examples:
-      $ quadro move 1 --to mvp
-      $ quadro move 5 --to root
-      $ quadro move 3 --to v2.0
+    Examples
+    --------
+    ```bash
+    $ quadro move 1 --to mvp
+    $ quadro move 5 --to root
+    $ quadro move 3 --to v2.0
+    ```
     """
     console = Console()
 
@@ -310,9 +324,11 @@ def edit(task_id: int) -> None:
     Invalid modifications (e.g., invalid status values) will be rejected with
     an error message.
 
-    \b
-    Example:
-      $ quadro edit 1
+    Examples
+    --------
+    ```bash
+    $ quadro edit 1
+    ```
     """
     console = Console()
 
@@ -354,11 +370,13 @@ def delete(task_id: int, yes: bool) -> None:  # noqa: FBT001
     allowing you to verify you're deleting the correct task. The confirmation
     defaults to 'No' for safety.
 
-    \b
-    Examples:
-      $ quadro delete 1
-      $ quadro delete 1 --yes
-      $ quadro delete 1 -y
+    Examples
+    --------
+    ```bash
+    $ quadro delete 1
+    $ quadro delete 1 --yes
+    $ quadro delete 1 -y
+    ```
     """
     console = Console()
     renderer = Renderer(console)
