@@ -1,14 +1,14 @@
 # MCP Integration
 
-You're working with Claude, deep in code. Ideas come up: refactor this module, add tests for that function, fix the edge case. Good ideas. But if you stop to create tickets, you lose flow.
+When you work with an AI assistant, you describe what needs to be built. The problem is your AI can't see those requirements unless you paste them every time.
 
-That's why Quadro works with the Model Context Protocol. Your AI assistant can manage your tasks while you talk about code. No context switching. No breaking flow.
+Quadro solves this through the Model Context Protocol. Your AI can read your tasks and see what needs to be implemented. Write your specs as tasks. Your AI reads them and helps you build.
 
 ## What is MCP?
 
-MCP (Model Context Protocol) is a standard that lets AI assistants use tools. Quadro provides an MCP server that exposes your task board to your AI.
+MCP (Model Context Protocol) is a standard that lets AI assistants access tools and data. Quadro provides an MCP server that gives your AI direct access to your tasks.
 
-When you tell Claude "Use Quadro to create a task," Claude actually creates it. The task appears in your `tasks/` directory as a markdown file. Your board stays in sync with your conversation.
+Your AI can read task descriptions, see requirements, and help you implement them. When you create or update tasks through MCP, they appear as markdown files in your `tasks/` directory.
 
 ## Setup
 
@@ -155,17 +155,23 @@ Remove task #5 using Quadro
 
 ### Planning a feature
 
-You're breaking down work with Claude:
+Break down what needs to be built:
 
 ```
 I need to build user authentication. Use Quadro to create these tasks in MVP: JWT token generation, login endpoint, password hashing.
 ```
 
-Claude creates each task. You keep planning.
+Your AI creates the tasks. Later when you start implementing, your AI can read those task specs to help you code.
 
 ### During implementation
 
-You're coding and want to track progress:
+Ask your AI to read a task and help you implement it:
+
+```
+Show me Quadro task #5 and help me implement it
+```
+
+Then mark progress:
 
 ```
 Use Quadro to start task #5
@@ -230,9 +236,9 @@ Defer Quadro tasks #8, #9, and #10 to v2.0
 
 ## How it works
 
-When you ask the AI to use Quadro, the AI calls the MCP tool, which modifies markdown files in your `tasks/` directory. Changes appear in your filesystem immediately. You see them in `git diff`.
+When you ask your AI to use Quadro, the AI calls the MCP server, which reads or modifies markdown files in your `tasks/` directory. Changes appear in your filesystem immediately. You see them in `git diff`.
 
-The AI can create tasks with titles, descriptions, and milestones. It can read your board with filters. It can update status (TODO → PROGRESS → DONE). It can move tasks between milestones, delete tasks, and show milestone summaries.
+Your AI can read tasks to see what needs to be built. It can create tasks with titles, descriptions, and milestones. It can update status (TODO → PROGRESS → DONE). It can move tasks between milestones, delete tasks, and show milestone summaries.
 
 ## Troubleshooting
 
@@ -242,4 +248,4 @@ The AI can create tasks with titles, descriptions, and milestones. It can read y
 
 ## Next steps
 
-Try creating a task through your AI assistant. See if it fits your workflow. Adjust your phrasing to find what feels natural.
+Try creating a task with some requirements, then ask your AI to help you implement it. See if having specs your AI can read fits your workflow.

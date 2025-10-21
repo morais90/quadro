@@ -1,28 +1,24 @@
 # Why Quadro
 
-You're coding with your AI assistant. You're in flow. Ideas are flowing. Your AI suggests refactoring this module, adding tests for that function, updating the docs. Good ideas. You'll get to them.
+If you work with an AI assistant to code, you probably describe what you want and your AI helps build it. The problem is those descriptions live in your head or in scattered comments. Your AI can't see them unless you paste them into the conversation every time.
 
-But how do you track them? Open a browser, create tickets, break your flow?
+Quadro stores those descriptions as markdown files. Your AI can read them through MCP. You write what needs to be built, your AI sees it and helps you implement it.
 
-That's the problem Quadro solves.
+The descriptions stay in your repo. Version controlled. Always there.
 
-Quadro is a task manager built for how you actually work with AI. It lives in your terminal, stores tasks as markdown files, and your AI assistant can manage your tasks directly while you code. No context switching. No breaking flow.
+## How it works
 
-## Three things working together
+### Your AI reads your tasks
 
-Quadro combines three simple ideas:
+Quadro uses the [Model Context Protocol](https://modelcontextprotocol.io). AI assistants that support MCP can read your tasks.
 
-### Your AI assistant manages tasks
+You create a task: "Add JWT authentication to /api/login endpoint. Tokens expire after 24 hours. Use bcrypt for password hashing."
 
-Quadro uses the [Model Context Protocol](https://modelcontextprotocol.io). AI assistants like Claude can read your tasks, create new ones, and update them while you're discussing code.
-
-You're talking with Claude about your project. Claude suggests "We should add input validation here." Claude creates the task. You say "Let's work on task 5 now." Claude marks it as in progress. You finish it. Claude marks it done.
-
-Your tasks stay in sync with your conversation. No manual updates. No switching tools.
+When you ask your AI to help with task #5, it can read the full description and requirements. When you finish, mark it done. The task stays in your repo as a record of what was built.
 
 ### Tasks are markdown files
 
-Each task is a markdown file. Simple text with a bit of YAML at the top.
+Each task is a markdown file with some YAML at the top for metadata.
 
 ```markdown
 ---
@@ -35,15 +31,18 @@ milestone: MVP
 
 Add JWT-based authentication to the API.
 
-## Notes
-Using the jsonwebtoken library. Tokens expire after 24 hours.
+## Requirements
+- POST /api/login endpoint accepts email and password
+- Returns JWT token valid for 24 hours
+- Use bcrypt for password hashing
+- Add middleware to verify tokens on protected routes
 ```
 
-You can read these files without Quadro. Edit them in any editor. Track them with git. Search them with grep. They're yours.
+You can open these files in any editor. Track them with git. Search them with grep. When a task is done, it documents what was built.
 
-### Fast terminal interface
+### Terminal interface
 
-When you want direct control, use the CLI:
+Manage tasks from the command line:
 
 ```bash
 quadro add "Fix login bug"
@@ -51,30 +50,30 @@ quadro start 42
 quadro done 42
 ```
 
-Fast commands. Instant results. Everything runs locally.
+Commands run locally. No servers, no API calls.
 
-All three work together. Use the CLI when you want quick control. Let your AI manage tasks when you're in conversation. Read and edit the files directly when you need to.
+Use the CLI for quick updates. Let your AI read and manage tasks when you're coding together. Edit the markdown files directly when you want to add details.
 
 Learn more about [MCP Integration](../mcp.md) or jump to [CLI commands](../cli.md).
 
 ## Why markdown files?
 
-You might wonder: why not a database? Why not a web API?
+Why not use a database or web API?
 
-Simple: because AI assistants can read files. You can read files. Git can track files. Any text editor can open files. Files are portable. Files are yours.
+Files are simpler. Your AI can read them. Git can track them. Any editor can open them. They work offline. You own them.
 
-We're not reinventing task management. We're using the simplest possible format that works with the tools you already have, including your AI assistant.
+Quadro uses the simplest format that works with your existing tools.
 
-## What about team work?
+## What about teams?
 
-Quadro is built for your local workflow first. But we know solo coding is just part of the picture.
+Right now, Quadro works best for solo developers or small teams that share a git repository.
 
-That's why we're building sync with GitHub Issues. When you need to share tasks with your team, Quadro will bridge your local markdown files with your team's issue tracker. Work locally with your AI, sync when you're ready to collaborate.
+We're planning to add GitHub Issues sync so you can work locally and sync with your team's issue tracker when needed. This isn't ready yet.
 
-This is coming soon. For now, Quadro works best for personal task management and small teams who share a git repository.
+For now, if your team already shares code through git, you can commit your tasks and push them just like code.
 
-## Give it a try
+## Try it
 
-If you code with AI assistants and want your tasks in the same flow, Quadro might fit your workflow.
+If you code with an AI assistant and want it to see your task list, Quadro might work for you.
 
 [Get started →](installation.md){ .md-button .md-button--primary }
