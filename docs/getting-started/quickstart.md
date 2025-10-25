@@ -1,18 +1,28 @@
 # Quickstart
 
-Let's create your first task and see how Quadro works.
+Let's set up Quadro with your AI assistant and create your first task.
 
-## Create a task
+## Setup
+
+You need to connect Quadro to your AI assistant through MCP. Here's how for Claude Code:
 
 ```bash
-quadro add "Set up development environment"
+claude mcp add quadro --scope user --transport stdio -- uvx --from quadro python -m quadro.mcp
 ```
 
-Done. Quadro created task #1.
+Using a different AI assistant? See the [full MCP setup guide](../mcp.md) for Cursor, Windsurf, and Cline.
 
-## Here's the interesting part
+That's it. Your AI can now work with Quadro.
 
-Look at your project folder. You now have a `tasks/` directory with a file called `1.md`. Open it:
+## Create your first task
+
+Open your AI assistant and ask it to create a task:
+
+```
+Use Quadro to create a task: "Set up development environment"
+```
+
+Your AI creates the task. Now look at your project folder. You have a `tasks/` directory with a file called `1.md`:
 
 ```markdown
 ---
@@ -25,44 +35,40 @@ completed: null
 # Set up development environment
 ```
 
-That's your task. Just a markdown file. You can read it, edit it, track it in git. Nothing magic. This is why your AI assistant can work with it too.
+That's your task. A markdown file. You can edit it, track it in git, grep through it. Your AI can read it.
 
-## See your tasks
+## Work with your AI
 
-```bash
-quadro list
-```
-
-Quadro shows you a nice table:
+Ask your AI to show your tasks:
 
 ```
-┌────┬──────────────────────────────────────┬──────────┬───────────┬─────────────────────┐
-│ ID │ Title                                │ Status   │ Milestone │ Created             │
-├────┼──────────────────────────────────────┼──────────┼───────────┼─────────────────────┤
-│ 1  │ Set up development environment       │ TODO     │           │ 2024-10-17 10:00:00 │
-└────┴──────────────────────────────────────┴──────────┴───────────┴─────────────────────┘
+Show me my Quadro tasks
 ```
 
-## Start working on it
+Your AI reads the tasks and shows them to you.
 
-```bash
-quadro start 1
+Start working on the task:
+
+```
+Use Quadro to start task #1
 ```
 
-The task status changes to `PROGRESS`. If you look at `tasks/1.md` again, you'll see the status updated there too.
+The status changes to `PROGRESS`. The file updates. When you're done:
 
-## Mark it done
-
-```bash
-quadro done 1
+```
+Mark Quadro task #1 done
 ```
 
-Status changes to `DONE`. Quadro adds a completion timestamp automatically.
+Status changes to `DONE`. Quadro adds a completion timestamp.
 
-## That's the basic flow
+## Why this matters
 
-Add tasks. Start them. Complete them. Everything is stored in simple files you can open, edit, and track with git.
+Next session, your AI still knows what you're building. No re-explaining. Ask it to show you tasks. Ask it to help implement task #5. The context persists because tasks are files in your repo.
 
-Want to understand how milestones work, or how to organize larger projects? The core concepts guide explains all of that.
+Want to add details to a task? Open the markdown file and write what you're planning to build. Your AI reads it and gives better suggestions.
 
-[Learn core concepts →](core-concepts.md){ .md-button .md-button--primary }
+## Next steps
+
+- Read the [MCP guide](../mcp.md) to see all the ways you can work with tasks through your AI
+- Check [core concepts](core-concepts.md) to understand milestones and task organization
+- Or just start using it. Create tasks for what you're building. See if planning first works for you.

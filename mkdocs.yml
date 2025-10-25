@@ -7,22 +7,22 @@ repo_name: morais90/quadro
 theme:
   name: material
   custom_dir: docs/overrides
-  logo: assets/logo_light_transparent.svg
+  logo: assets/logo_dark_transparent.svg
   palette:
-    # Light mode (default)
-    - scheme: default
-      primary: custom
-      accent: custom
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
-    # Dark mode
+    # Dark mode (default)
     - scheme: slate
       primary: custom
       accent: custom
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
+    # Light mode
+    - scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
   features:
     - navigation.instant
     - navigation.tracking
