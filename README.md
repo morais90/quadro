@@ -1,6 +1,8 @@
 <div align="center">
 
-# ⬜ Quadro
+<img src="docs/assets/logo_light_transparent.svg" alt="Quadro Logo" width="120">
+
+# Quadro
 
 Terminal-native • Markdown-powered • AI-ready
 
@@ -27,6 +29,6 @@ Quadro connects spec-driven development with AI assistants. Write your requireme
 
 Your specs become your task board. Your AI reads your task board. You build together.
 
-**[Get started →](https://morais90.github.io/quadro/getting-started/installation/)**
+**[Get started →](https://spec-driven.github.io/quadro/)**
 
 </div>

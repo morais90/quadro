@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 850">
+  <defs>
+    <mask id="frameMask">
+      <rect width="850" height="850" fill="white"/>
+      <!-- Buraco central -->
+      <rect x="162" y="169" width="502" height="511" fill="black"/>
+      <!-- Recorte triangular -->
+      <polygon points="664,770 664,679 573,679" fill="black"/>
+    </mask>
+  </defs>
+
+  <g mask="url(#frameMask)">
+    <!-- Moldura em preto com chanfro -->
+    <path d="M 68 173 L 157 80 L 757 80 L 757 680 L 667 769 L 68 769 Z" fill="#000000"/>
+  </g>
+</svg>

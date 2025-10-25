@@ -1,9 +1,7 @@
-/* Quadro - Monochrome + Chartreuse */
 @import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&display=swap');
 @import url('https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,600,700,800&display=swap');
 
 :root {
-  /* Dark mode colors */
   --quadro-black: #0f0f0f;
   --quadro-surface: #1a1a1a;
   --quadro-border: #2a2a2a;
@@ -366,4 +364,22 @@ a:hover {
 [data-md-color-scheme="default"] .md-typeset table:not([class]) th {
   color: var(--quadro-light-gray);
   border-bottom: 2px solid var(--quadro-light-accent);
+}
+
+/* Logo */
+.md-header__button.md-logo {
+  padding: 0;
+}
+
+.md-header__button.md-logo img {
+  width: 30px;
+  height: 30px;
+}
+
+[data-md-color-scheme="default"] .md-header__button.md-logo img {
+  content: url('../assets/logo_light_transparent.svg');
+}
+
+[data-md-color-scheme="slate"] .md-header__button.md-logo img {
+  content: url('../assets/logo_dark_transparent.svg');
 }
