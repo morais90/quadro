@@ -19,12 +19,24 @@ If you already have Python installed, this is the fastest way:
 pip install quadro
 ```
 
+This installs the core CLI with minimal dependencies. If you need MCP (Model Context Protocol) server support:
+
+```bash
+pip install quadro[mcp]
+```
+
 ### Using uv (recommended for Python developers)
 
 If you use [uv](https://github.com/astral-sh/uv) for Python package management:
 
 ```bash
 uv pip install quadro
+```
+
+Or with MCP support:
+
+```bash
+uv pip install quadro[mcp]
 ```
 
 uv is faster than pip and handles dependencies well. If you don't have it yet, the pip method works fine.
@@ -34,7 +46,7 @@ uv is faster than pip and handles dependencies well. If you don't have it yet, t
 Want to run the latest development version or contribute to Quadro?
 
 ```bash
-git clone https://github.com/morais90/quadro.git
+git clone https://github.com/spec-driven/quadro.git
 cd quadro
 uv sync
 uv run quadro
@@ -47,10 +59,10 @@ This clones the repository and sets up a development environment. Good for tryin
 Check that Quadro installed correctly:
 
 ```bash
-quadro --version
+quadro --help
 ```
 
-You should see the version number. If you get an error, make sure Python 3.12+ is in your PATH.
+You should see the command list and usage information. If you get an error, make sure Python 3.12+ is in your PATH.
 
 ## What's next
 

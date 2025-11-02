@@ -12,9 +12,9 @@ Terminal-native • Markdown-powered • AI-ready
 
 **Task management for the AI generation**
 
-[![Documentation](https://img.shields.io/badge/docs-quadro-blue?style=flat-square)](https://morais90.github.io/quadro/)
+[![Documentation](https://img.shields.io/badge/docs-quadro-blue?style=flat-square)](https://spec-driven.github.io/quadro/)
 [![Python](https://img.shields.io/badge/python-3.12+-blue?style=flat-square)](https://www.python.org)
-[![Version](https://img.shields.io/badge/version-0.1.0-green?style=flat-square)](https://github.com/morais90/quadro)
+[![Version](https://img.shields.io/badge/version-0.1.0-green?style=flat-square)](https://github.com/spec-driven/quadro)
 
 </div>
 
