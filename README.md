@@ -1,10 +1,6 @@
 <div align="center">
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo_dark_transparent.svg">
-  <source media="(prefers-color-scheme: light)" srcset="docs/assets/logo_light_transparent.svg">
-  <img src="docs/assets/logo_light_transparent.svg" alt="Quadro Logo" width="120">
-</picture>
+<img src="https://raw.githubusercontent.com/spec-driven/quadro/main/docs/assets/logo_light_transparent.svg" alt="Quadro Logo" width="120">
 
 # Quadro
 
