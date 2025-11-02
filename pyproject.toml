@@ -1,6 +1,6 @@
 [project]
 name = "quadro"
-version = "0.1.0"
+version = "0.1.1b0"
 description = "Manage your tasks directly from the terminal using markdown"
 readme = "README.md"
 requires-python = ">=3.12"
