@@ -209,6 +209,9 @@ trim = true
 owner = "spec-driven"
 repo = "quadro"
 
+[tool.git-cliff.bump]
+initial_tag = "1.0.0"
+
 [tool.git-cliff.git]
 conventional_commits = true
 filter_unconventional = true
