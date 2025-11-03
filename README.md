@@ -8,9 +8,9 @@ Terminal-native • Markdown-powered • AI-ready
 
 **Task management for the AI generation**
 
-[![Documentation](https://img.shields.io/badge/docs-quadro-blue?style=flat-square)](https://spec-driven.github.io/quadro/)
-[![Python](https://img.shields.io/badge/python-3.12+-blue?style=flat-square)](https://www.python.org)
-[![Version](https://img.shields.io/badge/version-0.1.0-green?style=flat-square)](https://github.com/spec-driven/quadro)
+[![PyPI](https://img.shields.io/pypi/v/qdr?style=flat-square&color=green)](https://pypi.org/project/qdr/)
+[![Python](https://img.shields.io/badge/python-3.12+-green?style=flat-square)](https://www.python.org)
+[![Documentation](https://img.shields.io/badge/docs-quadro-green?style=flat-square)](https://spec-driven.github.io/quadro/)
 
 </div>
 
