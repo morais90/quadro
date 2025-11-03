@@ -1,0 +1,186 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  prepare-release:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.git-cliff.outputs.version }}
+      tag: v${{ steps.git-cliff.outputs.version }}
+    permissions:
+      contents: write
+    steps:
+      - name: Generate GitHub App Token
+        id: generate-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.SPEC_APP_CLIENT_ID }}
+          private-key: ${{ secrets.SPEC_APP_PRIVATE_KEY }}
+
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ steps.generate-token.outputs.token }}
+
+      - name: Generate changelog and determine version
+        id: git-cliff
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: pyproject.toml
+          args: --verbose --bump --github-token ${{ secrets.GITHUB_TOKEN }}
+        env:
+          OUTPUT: CHANGELOG.md
+          GITHUB_REPO: ${{ github.repository }}
+
+      - name: Check if tag exists
+        id: check-tag
+        run: |
+          VERSION="${{ steps.git-cliff.outputs.version }}"
+          TAG="v$VERSION"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "Tag $TAG already exists"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update version in files
+        if: steps.check-tag.outputs.exists == 'false'
+        run: |
+          VERSION="${{ steps.git-cliff.outputs.version }}"
+          sed -i "s/^version = .*/version = \"$VERSION\"/" pyproject.toml
+          sed -i "s/^__version__ = .*/__version__ = \"$VERSION\"/" quadro/mcp.py
+          echo "Updated version to $VERSION in pyproject.toml and quadro/mcp.py"
+
+      - name: Commit and tag release
+        if: steps.check-tag.outputs.exists == 'false'
+        run: |
+          VERSION="${{ steps.git-cliff.outputs.version }}"
+          TAG="v$VERSION"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add CHANGELOG.md pyproject.toml quadro/mcp.py
+          git commit -m "chore(release): prepare $TAG"
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin main --tags
+
+          echo "Created commit and tag $TAG"
+
+  test-and-build:
+    needs: prepare-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.prepare-release.outputs.tag }}
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Run tests
+        run: uv run pytest tests/ --cov=quadro
+
+      - name: Build package
+        run: uv build
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v5
+        with:
+          name: release-artifacts
+          path: dist/
+
+  publish-pypi:
+    needs: [prepare-release, test-and-build]
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v5
+        with:
+          name: release-artifacts
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Check if version exists on PyPI
+        id: check-pypi
+        run: |
+          VERSION="${{ needs.prepare-release.outputs.version }}"
+          if pip index versions qdr 2>/dev/null | grep -q "$VERSION"; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "Version $VERSION already exists on PyPI"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Publish to PyPI
+        if: steps.check-pypi.outputs.exists == 'false'
+        run: uv publish
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+
+  create-release:
+    needs: [prepare-release, publish-pypi]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.prepare-release.outputs.tag }}
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v5
+        with:
+          name: release-artifacts
+          path: dist/
+
+      - name: Extract changelog for release
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: pyproject.toml
+          args: --latest --strip all
+        env:
+          OUTPUT: RELEASE_NOTES.md
+          GITHUB_REPO: ${{ github.repository }}
+
+      - name: Check if release exists
+        id: check-release
+        run: |
+          TAG="${{ needs.prepare-release.outputs.tag }}"
+          if gh release view "$TAG" --repo ${{ github.repository }} 2>/dev/null; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "Release $TAG already exists"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Create GitHub release
+        if: steps.check-release.outputs.exists == 'false'
+        run: |
+          TAG="${{ needs.prepare-release.outputs.tag }}"
+          gh release create "$TAG" \
+            --repo ${{ github.repository }} \
+            --title "$TAG" \
+            --notes-file RELEASE_NOTES.md \
+            dist/*.whl \
+            dist/*.tar.gz
+        env:
+          GH_TOKEN: ${{ github.token }}
