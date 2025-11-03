@@ -19,27 +19,17 @@ If you already have Python installed, this is the fastest way:
 pip install qdr
 ```
 
-This installs the core CLI with minimal dependencies. If you need MCP (Model Context Protocol) server support:
+This installs Quadro with all features, including the MCP (Model Context Protocol) server.
+
+### Using uv (recommended)
+
+If you use [uv](https://github.com/astral-sh/uv), install Quadro as a global tool:
 
 ```bash
-pip install qdr[mcp]
+uv tool install qdr
 ```
 
-### Using uv (recommended for Python developers)
-
-If you use [uv](https://github.com/astral-sh/uv) for Python package management:
-
-```bash
-uv pip install qdr
-```
-
-Or with MCP support:
-
-```bash
-uv pip install qdr[mcp]
-```
-
-uv is faster than pip and handles dependencies well. If you don't have it yet, the pip method works fine.
+This makes the `quadro` command available system-wide. uv is faster than pip and handles dependencies well. If you don't have it yet, the pip method works fine.
 
 ### Install from source
 

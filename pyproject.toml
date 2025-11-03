@@ -28,10 +28,6 @@ dependencies = [
     "click>=8.1.7",
     "rich>=13.7.0",
     "python-frontmatter>=1.1.0",
-]
-
-[project.optional-dependencies]
-mcp = [
     "fastmcp>=2.12.4",
     "pydantic>=2.12.0",
 ]
