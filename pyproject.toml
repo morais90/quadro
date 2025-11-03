@@ -140,6 +140,11 @@ precision = 2
 show_missing = true
 skip_covered = false
 
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "1.0.0"
+tag_format = "v$version"
+
 [tool.git-cliff.changelog]
 header = """
 # Changelog\n
