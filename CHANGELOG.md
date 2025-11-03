@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add PyPI badge to README by @morais90
 
 ### Fixed
+- Regenerate entire changelog to prevent duplicates by @morais90
 - Specify Python 3.12 for mypy pre-commit hook by @morais90
 
 ## [1.0.0] - 2025-11-03
