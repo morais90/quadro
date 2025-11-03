@@ -8,9 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- Make MCP dependencies required and improve install docs by @morais90
 - Add commitizen to pre-commit hooks by @morais90
 
 ### Documentation
+- Update CHANGELOG.md [skip ci] by @github-actions[bot]
 - Update CHANGELOG.md [skip ci] by @github-actions[bot]
 - Update MCP setup to use correct PyPI package name by @morais90
 - Update CHANGELOG.md [skip ci] by @github-actions[bot]
