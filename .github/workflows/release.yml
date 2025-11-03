@@ -7,8 +7,8 @@ jobs:
   prepare-release:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.git-cliff.outputs.version }}
-      tag: v${{ steps.git-cliff.outputs.version }}
+      version: ${{ steps.set-version.outputs.version }}
+      tag: ${{ steps.set-version.outputs.tag }}
     permissions:
       contents: write
     steps:
@@ -35,11 +35,18 @@ jobs:
           OUTPUT: CHANGELOG.md
           GITHUB_REPO: ${{ github.repository }}
 
+      - name: Set version outputs
+        id: set-version
+        run: |
+          VERSION="${{ steps.git-cliff.outputs.version }}"
+          VERSION="${VERSION#v}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+
       - name: Check if tag exists
         id: check-tag
         run: |
-          VERSION="${{ steps.git-cliff.outputs.version }}"
-          TAG="v$VERSION"
+          TAG="${{ steps.set-version.outputs.tag }}"
           if git rev-parse "$TAG" >/dev/null 2>&1; then
             echo "exists=true" >> $GITHUB_OUTPUT
             echo "Tag $TAG already exists"
@@ -50,7 +57,7 @@ jobs:
       - name: Update version in files
         if: steps.check-tag.outputs.exists == 'false'
         run: |
-          VERSION="${{ steps.git-cliff.outputs.version }}"
+          VERSION="${{ steps.set-version.outputs.version }}"
           sed -i "s/^version = .*/version = \"$VERSION\"/" pyproject.toml
           sed -i "s/^__version__ = .*/__version__ = \"$VERSION\"/" quadro/mcp.py
           echo "Updated version to $VERSION in pyproject.toml and quadro/mcp.py"
@@ -58,8 +65,7 @@ jobs:
       - name: Commit and tag release
         if: steps.check-tag.outputs.exists == 'false'
         run: |
-          VERSION="${{ steps.git-cliff.outputs.version }}"
-          TAG="v$VERSION"
+          TAG="${{ steps.set-version.outputs.tag }}"
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
