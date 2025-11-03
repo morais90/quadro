@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Add commitizen to pre-commit hooks by @morais90
+
+### Documentation
+- Update MCP setup to use correct PyPI package name by @morais90
+- Update CHANGELOG.md [skip ci] by @github-actions[bot]
+- Add PyPI badge to README by @morais90
+
+### Fixed
+- Specify Python 3.12 for mypy pre-commit hook by @morais90
+
+## [Unreleased]
+
 ### Documentation
 - Add PyPI badge to README by @morais90
 
