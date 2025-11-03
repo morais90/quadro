@@ -16,13 +16,13 @@ That's it. Quadro works on macOS, Linux, and Windows.
 If you already have Python installed, this is the fastest way:
 
 ```bash
-pip install quadro
+pip install qdr
 ```
 
 This installs the core CLI with minimal dependencies. If you need MCP (Model Context Protocol) server support:
 
 ```bash
-pip install quadro[mcp]
+pip install qdr[mcp]
 ```
 
 ### Using uv (recommended for Python developers)
@@ -30,13 +30,13 @@ pip install quadro[mcp]
 If you use [uv](https://github.com/astral-sh/uv) for Python package management:
 
 ```bash
-uv pip install quadro
+uv pip install qdr
 ```
 
 Or with MCP support:
 
 ```bash
-uv pip install quadro[mcp]
+uv pip install qdr[mcp]
 ```
 
 uv is faster than pip and handles dependencies well. If you don't have it yet, the pip method works fine.
