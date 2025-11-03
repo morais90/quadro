@@ -11,7 +11,7 @@ repos:
       - id: check-toml
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.13.3
+    rev: v0.14.3
     hooks:
       - id: ruff
         args: [--fix]
@@ -21,6 +21,7 @@ repos:
     rev: v1.18.2
     hooks:
       - id: mypy
+        language_version: python3.12
         additional_dependencies: [click, rich, python-frontmatter, pydantic, fastmcp]
 
   - repo: https://github.com/PyCQA/bandit
@@ -31,7 +32,7 @@ repos:
         additional_dependencies: ["bandit[toml]"]
 
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v4.2.1
+    rev: v4.9.1
     hooks:
       - id: commitizen
         stages: [commit-msg]
