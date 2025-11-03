@@ -28,7 +28,7 @@ mcp = FastMCP(
     """,
 )
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __description__ = "Manage your tasks directly from the terminal using markdown"
 
 
