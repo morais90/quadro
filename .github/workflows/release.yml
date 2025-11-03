@@ -9,6 +9,7 @@ jobs:
     outputs:
       version: ${{ steps.set-version.outputs.version }}
       tag: ${{ steps.set-version.outputs.tag }}
+      release_notes: ${{ steps.release-notes.outputs.notes }}
     permissions:
       contents: write
     steps:
@@ -62,6 +63,44 @@ jobs:
           sed -i "s/^__version__ = .*/__version__ = \"$VERSION\"/" quadro/mcp.py
           echo "Updated version to $VERSION in pyproject.toml and quadro/mcp.py"
 
+      - name: Generate release notes
+        if: steps.check-tag.outputs.exists == 'false'
+        id: release-notes
+        run: |
+          git cliff --latest --strip all > RELEASE_NOTES.md
+          {
+            echo 'notes<<EOF'
+            cat RELEASE_NOTES.md
+            echo EOF
+          } >> $GITHUB_OUTPUT
+
+      - name: Install uv
+        if: steps.check-tag.outputs.exists == 'false'
+        uses: astral-sh/setup-uv@v7
+
+      - name: Set up Python
+        if: steps.check-tag.outputs.exists == 'false'
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        if: steps.check-tag.outputs.exists == 'false'
+        run: uv sync --all-extras --dev
+
+      - name: Run tests
+        if: steps.check-tag.outputs.exists == 'false'
+        run: uv run pytest tests/ --cov=quadro
+
+      - name: Build package
+        if: steps.check-tag.outputs.exists == 'false'
+        run: uv build
+
+      - name: Upload artifacts
+        if: steps.check-tag.outputs.exists == 'false'
+        uses: actions/upload-artifact@v5
+        with:
+          name: release-artifacts
+          path: dist/
+
       - name: Commit and tag release
         if: steps.check-tag.outputs.exists == 'false'
         run: |
@@ -77,39 +116,8 @@ jobs:
 
           echo "Created commit and tag $TAG"
 
-  test-and-build:
-    needs: prepare-release
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
-        with:
-          ref: ${{ needs.prepare-release.outputs.tag }}
-          fetch-depth: 0
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v7
-
-      - name: Set up Python
-        run: uv python install 3.12
-
-      - name: Install dependencies
-        run: uv sync --all-extras --dev
-
-      - name: Run tests
-        run: uv run pytest tests/ --cov=quadro
-
-      - name: Build package
-        run: uv build
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v5
-        with:
-          name: release-artifacts
-          path: dist/
-
   publish-pypi:
-    needs: [prepare-release, test-and-build]
+    needs: prepare-release
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -157,15 +165,6 @@ jobs:
           name: release-artifacts
           path: dist/
 
-      - name: Extract changelog for release
-        uses: orhun/git-cliff-action@v4
-        with:
-          config: pyproject.toml
-          args: --latest --strip all
-        env:
-          OUTPUT: RELEASE_NOTES.md
-          GITHUB_REPO: ${{ github.repository }}
-
       - name: Check if release exists
         id: check-release
         run: |
@@ -186,7 +185,7 @@ jobs:
           gh release create "$TAG" \
             --repo ${{ github.repository }} \
             --title "$TAG" \
-            --notes-file RELEASE_NOTES.md \
+            --notes "${{ needs.prepare-release.outputs.release_notes }}" \
             dist/*.whl \
             dist/*.tar.gz
         env:
