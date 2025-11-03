@@ -19,7 +19,7 @@ Choose your AI assistant and follow the setup for your tool.
 [Claude Code](https://claude.com/code) uses a CLI to manage MCP servers. Add Quadro using the `claude mcp add` command:
 
 ```bash
-claude mcp add quadro --scope user --transport stdio -- uvx --from quadro python -m quadro.mcp
+claude mcp add quadro --scope user --transport stdio -- uvx --from qdr python -m quadro.mcp
 ```
 
 The `--scope user` makes Quadro available across all your projects. Use `--scope project` to add it only to the current project.
@@ -48,7 +48,7 @@ Add this configuration:
       "command": "uvx",
       "args": [
         "--from",
-        "quadro",
+        "qdr",
         "python",
         "-m",
         "quadro.mcp"
@@ -76,7 +76,7 @@ Add this configuration:
       "command": "uvx",
       "args": [
         "--from",
-        "quadro",
+        "qdr",
         "python",
         "-m",
         "quadro.mcp"
@@ -97,7 +97,7 @@ Click the refresh button in Windsurf to apply the changes.
 2. Navigate to MCP servers section
 3. Add a new server with these settings:
    - **Command**: `uvx`
-   - **Args**: `--from`, `quadro`, `python`, `-m`, `quadro.mcp`
+   - **Args**: `--from`, `qdr`, `python`, `-m`, `quadro.mcp`
 
 Cline will display the Quadro tools once configured.
 
