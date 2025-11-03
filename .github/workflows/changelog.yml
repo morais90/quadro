@@ -30,7 +30,6 @@ jobs:
           config: pyproject.toml
           args: --verbose --unreleased --prepend CHANGELOG.md --github-token ${{ secrets.GITHUB_TOKEN }}
         env:
-          OUTPUT: CHANGELOG.md
           GITHUB_REPO: ${{ github.repository }}
 
       - name: Check for changes and commit
