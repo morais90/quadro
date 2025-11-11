@@ -314,6 +314,51 @@ def update_task_from_markdown(task_id: int, markdown_content: str) -> Task:
     return updated_task
 
 
+def update_task(
+    task_id: int,
+    title: str | None = None,
+    description: str | None = None,
+) -> Task:
+    """
+    Update specific fields of a task.
+
+    Parameters
+    ----------
+    task_id : int
+        The ID of the task to update
+    title : str | None, optional
+        New title for the task, by default None
+    description : str | None, optional
+        New description for the task, by default None
+
+    Returns
+    -------
+    Task
+        The updated task object
+
+    Raises
+    ------
+    TaskNotFoundError
+        If task with the specified ID does not exist
+    """
+    storage = TaskStorage()
+    task = storage.load_task(task_id)
+
+    if task is None:
+        msg = f"Task #{task_id} not found"
+        raise TaskNotFoundError(msg)
+
+    if title is not None:
+        task.title = title
+
+    if description is not None:
+        task.description = description
+
+    storage.save_task(task)
+
+    return task
+
+
 def delete_task(task_id: int) -> tuple[Task, Path]:
     """
     Delete a task by ID.

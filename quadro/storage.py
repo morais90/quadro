@@ -78,6 +78,7 @@ class TaskStorage:
 
     def move_task(self, task_id: int, to_milestone: str | None) -> Path:
         task = self.load_task(task_id)
+
         if task is None:
             msg = f"Task {task_id} not found"
             raise ValueError(msg)

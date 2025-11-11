@@ -14,6 +14,7 @@ from quadro.command import list_tasks as get_all_tasks
 from quadro.command import move_task
 from quadro.command import show_task
 from quadro.command import start_task
+from quadro.command import update_task
 from quadro.command import update_task_from_markdown
 from quadro.exceptions import TaskAlreadyDoneError
 from quadro.exceptions import TaskAlreadyInProgressError
@@ -350,6 +351,46 @@ def edit(task_id: int) -> None:
 
     update_task_from_markdown(task_id, edited_content)
     console.print(f"[green]✓[/green] Updated task #{task_id}")
+
+
+@main.command("update")
+@click.argument("task_id", type=int)
+@click.option("--title", default=None, help="New title for the task")
+@click.option("--description", "-d", default=None, help="New description for the task")
+@handle_exceptions
+def update(
+    task_id: int,
+    title: str | None,
+    description: str | None,
+) -> None:
+    """Update a task's title and/or description.
+
+    Allows programmatic updates to task content without opening an editor.
+    At least one field must be specified. To change a task's milestone,
+    use the 'move' command instead.
+
+    Examples
+    --------
+    ```bash
+    $ quadro update 1 --title "New Title"
+    $ quadro update 5 --description "Updated description"
+    $ quadro update 7 --title "New Title" --description "New description"
+    $ quadro update 3 -d "Using shorthand flag"
+    ```
+    """
+    console = Console()
+
+    if title is None and description is None:
+        console.print("[red]✗[/red] At least one field must be specified")
+        console.print("Use --title or --description to update the task")
+        raise SystemExit(1)
+
+    try:
+        task = update_task(task_id, title=title, description=description)
+        console.print(f"[green]✓[/green] Updated task #{task_id}: {task.title}")
+    except TaskNotFoundError as e:
+        console.print(f"[red]✗[/red] {e}")
+        raise SystemExit(1) from None
 
 
 @main.command("delete")

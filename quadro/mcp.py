@@ -18,7 +18,7 @@ mcp = FastMCP(
     - Create new tasks with title, description, and milestone
     - View detailed information about specific tasks
     - Update task status (todo → progress → done)
-    - Edit task details (title, description, milestone)
+    - Update task content (title and description)
     - Move tasks between milestones
     - Delete tasks permanently
     - View milestone summaries
@@ -199,6 +199,37 @@ def move_task(
     """
     command.move_task(task_id, to_milestone)
     return command.show_task(task_id)
+
+
+@mcp.tool(description="Update task content (title and description)")
+def update_task(
+    task_id: Annotated[int, Field(description="The ID of the task to update")],
+    title: Annotated[str | None, Field(description="New title for the task")] = None,
+    description: Annotated[str | None, Field(description="New description for the task")] = None,
+) -> Task:
+    """
+    Update a task's title and/or description.
+
+    Parameters
+    ----------
+    task_id : int
+        The ID of the task to update.
+    title : str | None
+        New title for the task. If None, title is not updated.
+    description : str | None
+        New description for the task. If None, description is not updated.
+
+    Returns
+    -------
+    Task
+        The updated task object.
+
+    Raises
+    ------
+    TaskNotFoundError
+        If task with the specified ID does not exist.
+    """
+    return command.update_task(task_id, title=title, description=description)
 
 
 @mcp.tool(description="Delete a task permanently")

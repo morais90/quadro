@@ -486,6 +486,72 @@ class TestMoveTaskMCPTool:
                     await client.call_tool("move_task", {"task_id": 999, "to_milestone": "mvp"})
 
 
+class TestUpdateTaskMCPTool:
+    @pytest.mark.asyncio
+    @freeze_time(FROZEN_TIME)
+    async def test_update_task_title(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            task = add_task("Original title", description="Original description")
+
+            async with Client(mcp) as client:
+                result = await client.call_tool(
+                    "update_task",
+                    {"task_id": task.id, "title": "Updated title"},
+                )
+
+                expected = to_compact_json(
+                    build_task_json(task.id, "Updated title", description="Original description")
+                )
+
+                assert result.content[0].text == expected
+
+    @pytest.mark.asyncio
+    @freeze_time(FROZEN_TIME)
+    async def test_update_task_description(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            task = add_task("Task title", description="Original description")
+
+            async with Client(mcp) as client:
+                result = await client.call_tool(
+                    "update_task",
+                    {"task_id": task.id, "description": "Updated description"},
+                )
+
+                expected = to_compact_json(
+                    build_task_json(task.id, "Task title", description="Updated description")
+                )
+
+                assert result.content[0].text == expected
+
+    @pytest.mark.asyncio
+    @freeze_time(FROZEN_TIME)
+    async def test_update_task_multiple_fields(self, runner: CliRunner) -> None:
+        with runner.isolated_filesystem():
+            task = add_task("Original title", description="Original description")
+
+            async with Client(mcp) as client:
+                result = await client.call_tool(
+                    "update_task",
+                    {"task_id": task.id, "title": "New title", "description": "New description"},
+                )
+
+                expected = to_compact_json(
+                    build_task_json(task.id, "New title", description="New description")
+                )
+
+                assert result.content[0].text == expected
+
+    @pytest.mark.asyncio
+    async def test_update_task_raises_error_for_nonexistent_task(
+        self,
+        runner: CliRunner,
+    ) -> None:
+        with runner.isolated_filesystem():
+            async with Client(mcp) as client:
+                with pytest.raises(Exception, match="Task #999 not found"):
+                    await client.call_tool("update_task", {"task_id": 999, "title": "New title"})
+
+
 class TestDeleteTaskMCPTool:
     @pytest.mark.asyncio
     @freeze_time(FROZEN_TIME)

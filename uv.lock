@@ -1402,8 +1402,8 @@ wheels = [
 ]
 
 [[package]]
-name = "quadro"
-version = "0.1.0"
+name = "qdr"
+version = "1.0.1"
 source = { editable = "." }
 dependencies = [
     { name = "click" },

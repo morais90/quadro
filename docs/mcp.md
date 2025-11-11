@@ -110,7 +110,7 @@ You need to explicitly ask your AI assistant to use Quadro. The AI won't automat
 When you're discussing code and want to capture a task:
 
 ```
-Use Quadro to create a task: "Implement JWT token generation"
+Use Quadro to create a task: "Implement JWT token generation" with description "Add function to generate and sign JWT tokens using HS256 algorithm with 1-hour expiration"
 ```
 
 The task file appears in your `tasks/` directory.
@@ -118,7 +118,7 @@ The task file appears in your `tasks/` directory.
 Want to add it to a milestone?
 
 ```
-Add this to Quadro in the MVP milestone: "Add password reset flow"
+Add this to Quadro in the MVP milestone: "Add password reset flow" with description "Implement email-based password reset: generate token, send email, validate token, update password"
 ```
 
 ### Checking your board
@@ -135,6 +135,16 @@ What tasks do I have in progress using Quadro?
 Mark Quadro task #1 as in progress
 Complete Quadro task #5
 Start task #3 in Quadro
+```
+
+### Updating tasks
+
+```
+Update Quadro task #5 title to "Implement JWT with refresh tokens"
+
+Use Quadro to update task #3 description to "Add rate limiting middleware: 100 requests per 15 minutes per IP address, use Redis for tracking"
+
+Update task #2 with title "Fix null pointer in auth middleware" and description "Handle case where user object is null after token validation fails"
 ```
 
 ### Moving tasks
@@ -158,10 +168,14 @@ Remove task #5 using Quadro
 Break down what needs to be built:
 
 ```
-I need to build user authentication. Use Quadro to create these tasks in MVP: JWT token generation, login endpoint, password hashing.
+I need to build user authentication. Use Quadro to create these tasks in MVP:
+
+1. "Implement JWT token generation" - Add function to create access tokens with user claims, 1-hour expiration, and HS256 signing
+2. "Build login endpoint" - Create POST /api/auth/login that validates credentials and returns JWT token
+3. "Add password hashing" - Use bcrypt to hash passwords with salt rounds of 12 before storing in database
 ```
 
-Your AI creates the tasks. Later when you start implementing, your AI can read those task specs to help you code.
+Your AI creates the tasks with detailed descriptions. Later when you start implementing, your AI can read those task specs to help you code.
 
 ### During implementation
 
@@ -186,7 +200,11 @@ Show me Quadro tasks I completed yesterday
 ### Sprint planning
 
 ```
-Use Quadro to create these in Sprint-2: refactor API handlers, add request middleware, improve error handling
+Use Quadro to create these in Sprint-2:
+
+1. "Refactor API handlers" - Extract common validation logic into reusable functions, reduce code duplication across endpoints
+2. "Add request logging middleware" - Log all incoming requests with timestamp, method, path, IP address, and response time
+3. "Improve error handling" - Standardize error responses with consistent JSON format including error code, message, and stack trace in dev mode
 ```
 
 ### Context switching
@@ -201,7 +219,7 @@ Mark current task done and show next in MVP
 Found a bug while coding:
 
 ```
-Use Quadro to create a task in MVP: fix null pointer in auth middleware
+Use Quadro to create a task in Bugfixes: "Fix null pointer exception in auth middleware" with description "When JWT token is expired, middleware crashes instead of returning 401. Add null check after token.verify() call"
 ```
 
 ## Tips
@@ -211,13 +229,13 @@ Always mention "Quadro" or "using Quadro" when you want the AI to interact with 
 You can request multiple operations:
 
 ```
-Use Quadro to complete task #5, start task #6, and create "Write tests" in MVP
+Use Quadro to complete task #5, start task #6, and create "Write unit tests for auth endpoints" with description "Add test coverage for login, logout, and token refresh endpoints using Jest" in MVP
 ```
 
 Mix task management with code discussions:
 
 ```
-I just implemented the JWT logic. Mark Quadro task #1 done and show me the next task in MVP.
+I just implemented the JWT token generation with refresh tokens. Mark Quadro task #1 done and show me the next task in MVP milestone.
 ```
 
 Check your board periodically:

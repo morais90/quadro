@@ -26,6 +26,8 @@ This page covers the CLI commands. Use them when you want quick, direct control.
 
 ::: quadro.cli.move
 
+::: quadro.cli.update
+
 ::: quadro.cli.edit
 
 ::: quadro.cli.delete
