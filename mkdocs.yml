@@ -1,8 +1,8 @@
 site_name: Quadro
 site_description: Your task board in markdown
 site_author: Quadro Contributors
-repo_url: https://github.com/morais90/quadro
-repo_name: morais90/quadro
+repo_url: https://github.com/spec-driven/quadro
+repo_name: spec-driven/quadro
 
 theme:
   name: material
