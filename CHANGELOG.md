@@ -7,10 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add update command for task content by @morais90
+
 ### Changed
+- Remove completed Distribution milestone by @morais90
 - Split tests into separate job before release by @morais90
 
+### Documentation
+- Update CHANGELOG.md [skip ci] by @github-actions[bot]
+
 ### Fixed
+- Correct repository URL to spec-driven organization by @morais90
 - Run tests before creating release commit and tag by @morais90
 
 ## [1.0.1] - 2025-11-03
